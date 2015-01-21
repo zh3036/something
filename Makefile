@@ -1,9 +1,27 @@
 
-default: echo_server
 
-echo_server:
-	@gcc echoservers.c -o liso -Wall -Werror
+
+
+
+
+
+CC = gcc
+CFLAGS = -Wall -Wextra -Werror -O2 -g -DDRIVER -std=gnu99
+
+OBJS = netdef.o echoservers.o
+
+all: liso
+
+liso: $(OBJS)
+	$(CC) $(CFLAGS) -o liso $(OBJS)
+
+echoservers.o: echoservers.c netdef.h
+netdef.o: netdef.h netdef.c
 
 
 clean:
-	@rm liso 
+	@rm -f *.o liso
+
+
+submit:
+	@make clean; cd ..; tar cvf echoserver_checkpoint-1.tar 15-441-project-1 
