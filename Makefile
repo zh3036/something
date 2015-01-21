@@ -13,7 +13,7 @@ OBJS = netdef.o echoservers.o
 all: liso
 
 liso: $(OBJS)
-	$(CC) $(CFLAGS) -o liso $(OBJS)
+	$(CC) $(CFLAGS) -o lisod $(OBJS)
 
 echoservers.o: echoservers.c netdef.h
 netdef.o: netdef.h netdef.c
