@@ -1,0 +1,4 @@
+1. it handles small msg not well, when using the given checker for less than 3 bytes, it does not 
+always send back the right string.
+
+

@@ -1,0 +1,7 @@
+1. the test case using threading to send arbitraty many connections with different trials and num of bytes.
+
+the issue are when the threads are too many, the time will be out, or somestring is not properly sent back
+
+
+
+
