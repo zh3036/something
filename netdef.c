@@ -30,7 +30,7 @@ int open_listenfd(int port)
 void unix_error(char *msg) /* unix-style error */
 {
     fprintf(stderr, "%s: %s\n", msg, strerror(errno));
-    exit(0);
+    //exit(0);
 }
 
 
@@ -74,7 +74,7 @@ int Select(int  n, fd_set *readfds, fd_set *writefds,
 void app_error(char *msg) /* application error */
 {
     fprintf(stderr, "%s\n", msg);
-    exit(0);
+    //exit(0);
 }
 
 
