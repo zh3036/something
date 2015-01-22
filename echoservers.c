@@ -39,6 +39,7 @@ int main(int argc, char **argv)
     struct sockaddr_in clientaddr;
     static pool pool; 
     port=1234;
+    printf("we have %d args\n",argc);
 
     /*if (argc == 2) {*/
       /*port = atoi(argv[1]);*/
