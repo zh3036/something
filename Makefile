@@ -20,7 +20,7 @@ netdef.o: netdef.h netdef.c
 
 
 clean:
-	@rm -f *.o liso
+	@rm -f *.o lisod
 
 
 submit:
