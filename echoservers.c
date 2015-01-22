@@ -38,6 +38,7 @@ int main(int argc, char **argv)
     socklen_t clientlen = sizeof(struct sockaddr_in);
     struct sockaddr_in clientaddr;
     static pool pool; 
+    port=1234;
 
     if (argc == 2) {
       port = atoi(argv[1]);
