@@ -45,7 +45,7 @@ int main(int argc, char **argv)
       port = atoi(argv[1]);
     }else{
       fprintf(stderr, "usage: %s <port>\n", argv[0]);
-      exit(0);
+      //exit(0);
     }
 
     listenfd = Open_listenfd(port);
