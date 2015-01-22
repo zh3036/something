@@ -68,6 +68,7 @@ int main(int argc, char **argv)
     pool.nready--;
       for (i = 0; i < FD_SETSIZE; i++){  /* Find an available slot */
         if (pool.clientfd[i] < 0) { 
+            connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
             /* Add connected descriptor to the pool */
             pool.clientfd[i] = connfd;
             /* Add the descriptor to descriptor set */
