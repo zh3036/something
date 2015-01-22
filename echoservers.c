@@ -31,13 +31,15 @@ void init_pool(int listenfd, pool *p);
 void add_client(int connfd, pool *p);
 void check_clients(pool *p);
 
+int full_flag=0;
 
 int main(int argc, char **argv)
 {
-    int listenfd, connfd, port; 
+    int listenfd, connfd, port,i;
     socklen_t clientlen = sizeof(struct sockaddr_in);
     struct sockaddr_in clientaddr;
     static pool pool; 
+
     port=1234;
     printf("we have %d args\n",argc);
 
@@ -59,13 +61,32 @@ int main(int argc, char **argv)
 	pool.nready = Select(pool.maxfd+1, &pool.ready_set, NULL, NULL, NULL);
 
 	/* If listening descriptor ready, add new client to pool */
-	if (FD_ISSET(listenfd, &pool.ready_set)) { 
-	    connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
-	    add_client(connfd, &pool);
-	}
-	
+  if (full_flag==0){
+    if (FD_ISSET(listenfd, &pool.ready_set)) { 
+        //connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
+          //add_client(connfd, &pool);
+    pool.nready--;
+      for (i = 0; i < FD_SETSIZE; i++){  /* Find an available slot */
+        if (pool.clientfd[i] < 0) { 
+            /* Add connected descriptor to the pool */
+            pool.clientfd[i] = connfd;
+            /* Add the descriptor to descriptor set */
+            FD_SET(connfd, &pool.read_set);
+            /* Update max descriptor and pool highwater mark */
+            if (connfd > pool.maxfd) 
+              pool.maxfd = connfd; 
+            if (i > pool.maxi)
+              pool.maxi = i;
+            break;
+        }
+      }
+   if (i == FD_SETSIZE){ /* Couldn't find an empty slot */
+     full_flag=1;
+   }
+    }
+    check_clients(&pool); 
+  }
 	/* Echo a text line from each ready connected descriptor */ 
-	check_clients(&pool); 
     }
 }
 /* $end echoservers main */
@@ -91,22 +112,24 @@ void add_client(int connfd, pool *p)
 {
     int i;
     p->nready--;
-    for (i = 0; i < FD_SETSIZE; i++){  /* Find an available slot */
-      if (p->clientfd[i] < 0) { 
-          /* Add connected descriptor to the pool */
-          p->clientfd[i] = connfd;
-          /* Add the descriptor to descriptor set */
-          FD_SET(connfd, &p->read_set);
-          /* Update max descriptor and pool highwater mark */
-          if (connfd > p->maxfd) 
-            p->maxfd = connfd; 
-          if (i > p->maxi)
-            p->maxi = i;
-          break;
+      for (i = 0; i < FD_SETSIZE; i++){  /* Find an available slot */
+        if (p->clientfd[i] < 0) { 
+            /* Add connected descriptor to the pool */
+            p->clientfd[i] = connfd;
+            /* Add the descriptor to descriptor set */
+            FD_SET(connfd, &p->read_set);
+            /* Update max descriptor and pool highwater mark */
+            if (connfd > p->maxfd) 
+              p->maxfd = connfd; 
+            if (i > p->maxi)
+              p->maxi = i;
+            break;
+        }
       }
-    }
-    if (i == FD_SETSIZE) /* Couldn't find an empty slot */
-	app_error("add_client error: Too many clients");
+   if (i == FD_SETSIZE){ /* Couldn't find an empty slot */
+     full_flag=1;
+   }
+      
 }
 /* $end add_client */
 
