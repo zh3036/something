@@ -40,8 +40,10 @@ int main(int argc, char **argv)
     struct sockaddr_in clientaddr;
     static pool pool; 
 
+
     port=1234;
-    printf("we have %d args\n",argc);
+    //printf("we have %d args\n",argc);
+    port=port+argc;
 
     /*if (argc == 2) {*/
       /*port = atoi(argv[1]);*/
@@ -146,8 +148,8 @@ void check_clients(pool *p)
       if ((connfd > 0) && (FD_ISSET(connfd, &p->ready_set))) { 
           p->nready--;
           if ((n = recv(connfd, buf, MAXLINE,0)) >1) {
-            printf("Server received %d  bytes on fd %d\n", 
-               n,  connfd);
+            //printf("Server received %d  bytes on fd %d\n", 
+            //   n,  connfd);
             send(connfd, buf, n,0); 
           }
           /* EOF detected, remove descriptor from pool */
