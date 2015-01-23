@@ -141,16 +141,21 @@ void check_clients(pool *p)
 {
     int i, connfd, n;
     char buf[MAXLINE]; 
+    int tem;
 
     for (i = 0; (i <= p->maxi) && (p->nready > 0); i++) {
       connfd = p->clientfd[i];
       /* If the descriptor is ready, echo a text line from it */
       if ((connfd > 0) && (FD_ISSET(connfd, &p->ready_set))) { 
           p->nready--;
+          tem=0;
           if ((n = recv(connfd, buf, MAXLINE,0)) >1) {
             //printf("Server received %d  bytes on fd %d\n", 
             //   n,  connfd);
-            send(connfd, buf, n,0); 
+            while(n>0){
+              tem=send(connfd, buf+tem, n-tem,0); 
+              n=n-tem;
+            }
           }
           /* EOF detected, remove descriptor from pool */
           else { 
