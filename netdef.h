@@ -1,3 +1,7 @@
+
+#ifndef NETDEF_H
+#define NETDEF_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -39,7 +43,7 @@ int open_listenfd(int port) ;
 
 
 
-void unix_error(char *msg) /* unix-style error */;
+void unix_error(char *msg,int fd) /* unix-style error */;
 
 int Close(int fd) ;
 
@@ -51,3 +55,4 @@ int Select(int  n, fd_set *readfds, fd_set *writefds,
 	   fd_set *exceptfds, struct timeval *timeout) ;
 
 void app_error(char *msg) /* application error */;
+#endif

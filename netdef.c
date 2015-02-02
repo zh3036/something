@@ -1,4 +1,6 @@
 #include "netdef.h"
+#include "log.c"
+
 int open_listenfd(int port) 
 {
     int listenfd, optval=1;
@@ -27,9 +29,10 @@ int open_listenfd(int port)
 	return -1;
     return listenfd;
 }
-void unix_error(char *msg) /* unix-style error */
+void unix_error(char *msg, int fd) /* unix-style error */
 {
     fprintf(stderr, "%s: %s\n", msg, strerror(errno));
+    LogWrite(LOG, msg, strerror(errno), fd);
     //exit(0);
 }
 
@@ -40,7 +43,7 @@ int Close(int fd)
     int rc;
 
     if ((rc = close(fd)) < 0)
-	unix_error("Close error");
+	unix_error("Close error",fd);
     
     return rc;
 }
@@ -50,7 +53,7 @@ int Accept(int s, struct sockaddr *addr, socklen_t *addrlen)
     int rc;
 
     if ((rc = accept(s, addr, addrlen)) < 0)
-	unix_error("Accept error");
+	unix_error("Accept error",s);
     return rc;
 }
 
@@ -59,7 +62,7 @@ int Open_listenfd(int port)
     int rc;
 
     if ((rc = open_listenfd(port)) < 0)
-	unix_error("Open_listenfd error");
+	unix_error("Open_listenfd error",-1);
     return rc;
 }
 
@@ -69,7 +72,7 @@ int Select(int  n, fd_set *readfds, fd_set *writefds,
     int rc;
 
     if ((rc = select(n, readfds, writefds, exceptfds, timeout)) < 0)
-	unix_error("Select error");
+	unix_error("Select error",n);
     return rc;
 }
 

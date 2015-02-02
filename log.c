@@ -1,6 +1,5 @@
 #include "netdef.h"
 
-
 void LogWrite( int type, char *s1, char *s2, int num)
 
 {
