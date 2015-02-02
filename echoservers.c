@@ -15,9 +15,11 @@
  */
 /* $begin echoserversmain */
 
+
+
+#include "httpPro.c"
 #include "netdef.h"
 
-//wo shishi 
 typedef struct { /* a pool of connected descriptors */ 
     int maxfd;        /* largest descriptor in read_set */   
     fd_set read_set;  /* set of all active descriptors */
@@ -30,6 +32,7 @@ typedef struct { /* a pool of connected descriptors */
 void init_pool(int listenfd, pool *p);
 void add_client(int connfd, pool *p);
 void check_clients(pool *p);
+
 
 int full_flag=0;
 
@@ -56,18 +59,30 @@ int main(int argc, char **argv)
     if(argc != 9){
     	printf("somehing wrong here..not enough argcs\
     		usage \n");
+      // exit(0);
     } else 
     {
+
     	port = atoi(argv[1]);
     	ports = atoi(argv[2]);
-      strcpy(LogFile,argv[3]);
-      strcpy(LockFile, argv[4]);
-      strcpy(wwwFolder,argv[5]);
-      strcpy(cgiScript,argv[6]);
-      strcpy(privateKey, argv[7]);
-      strcpy(certificate, argv[8]);
-      
+      // before copy need chck the length of args
+      strncpy(LogFile,argv[3],FILENAMELENGTH)[FILENAMELENGTH-1]=0;
+      strncpy(LockFile, argv[4],FILENAMELENGTH)[FILENAMELENGTH-1]=0;
+      strncpy(wwwFolder,argv[5],FILENAMELENGTH)[FILENAMELENGTH-1]=0;
+      strncpy(cgiScript,argv[6],FILENAMELENGTH)[FILENAMELENGTH-1]=0;
+      strncpy(privateKey, argv[7],FILENAMELENGTH)[FILENAMELENGTH-1]=0;
+      strncpy(certificate, argv[8],FILENAMELENGTH)[FILENAMELENGTH-1]=0;
+      if (access(LogFile, 0) || access(LockFile, 0) \
+        ||access(wwwFolder, 0)||access(cgiScript, 0)\
+        ||access(privateKey, 0)||access(certificate, 0))
+      {
+        fprintf(stderr, "some filename is wrong, plz check\n");
+        exit(0);
+      }
     } 
+
+
+
     
 
 
