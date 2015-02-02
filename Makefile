@@ -8,15 +8,18 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror -O2 -g -DDRIVER -std=gnu99
 
-OBJS = netdef.o echoservers.o
+OBJS = netdef.o echoservers.o httppro.o httpdef.o
 
 all: liso
 
 liso: $(OBJS)
 	$(CC) $(CFLAGS) -o lisod $(OBJS)
 
+
 echoservers.o: echoservers.c netdef.h
-netdef.o: netdef.h netdef.c
+netdef.o: netdef.h netdef.c log.c
+httpdef.o: httpdef.h httpdef.c
+httppro.o: httppro.c httppro.h
 
 
 clean:

@@ -22,3 +22,4 @@ ssize_t rio_read(rio_t *rp, char *usrbuf, size_t n)
 ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen) 
 ;
 
+void rio_readinitb(rio_t *rp, int fd) ;
