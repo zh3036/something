@@ -8,3 +8,28 @@ whether this fd is for writing or reading right? However, since we can choose to
 
 
 do not keep the buffer forever
+
+
+
+
+
+
+implement for buffer read
+
+So first a global list 
+size is the maxim num of fd
+so by calling A[fd] we can find that place
+each place it is struct of buffer
+
+this buffer is a link list, with a ptr to specify 
+current read position, and unread byte num
+
+
+
+
+
+NEED TO LEAVE ONE FD FOR SENDING BACK THAT THE FD IS FULL
+
+
+
+

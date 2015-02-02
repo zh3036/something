@@ -1,23 +1,14 @@
 /* 
  *
- * Zihan Zhou Project 1 checkpoint 1
- * echoserver based on select
- * 
- * I read several times the select server in CSAPP
- * and then write it without the book
- * and then during debugging find that my bug are those 
- * parts that are different from the code in the book.......
- * some wrapper function are borrowed from csapp.h
- *
- *
- *
- * echoservers.c - A concurrent echo server based on select
+ * Zihan Zhou Project 1 checkpoint 2
+ * asd
+ * asd
  */
 /* $begin echoserversmain */
 
 
 
-#include "httpPro.c"
+#include "httpPro.h"
 #include "netdef.h"
 
 typedef struct { /* a pool of connected descriptors */ 
@@ -59,10 +50,8 @@ int main(int argc, char **argv)
     if(argc != 9){
     	printf("somehing wrong here..not enough argcs\
     		usage \n");
-      // exit(0);
-    } else 
-    {
-
+      exit(0);
+    } else {
     	port = atoi(argv[1]);
     	ports = atoi(argv[2]);
       // before copy need chck the length of args
@@ -72,13 +61,16 @@ int main(int argc, char **argv)
       strncpy(cgiScript,argv[6],FILENAMELENGTH)[FILENAMELENGTH-1]=0;
       strncpy(privateKey, argv[7],FILENAMELENGTH)[FILENAMELENGTH-1]=0;
       strncpy(certificate, argv[8],FILENAMELENGTH)[FILENAMELENGTH-1]=0;
-      if (access(LogFile, 0) || access(LockFile, 0) \
-        ||access(wwwFolder, 0)||access(cgiScript, 0)\
-        ||access(privateKey, 0)||access(certificate, 0))
-      {
+      if (access(LogFile, W_OK) || access(LockFile, 0) \
+        ||access(wwwFolder, R_OK)||access(cgiScript, X_OK)\
+        ||access(privateKey, 0)||access(certificate, 0)){
         fprintf(stderr, "some filename is wrong, plz check\n");
         exit(0);
       }
+      logfilename = LogFile;
+      // logfile need writable
+      // www folder need be readable 
+      // cgiscript need be runnable
     } 
 
 

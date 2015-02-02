@@ -29,6 +29,11 @@ typedef struct sockaddr SA;
 #define MAXBUF   8192  /* max I/O buffer size */
 #define LISTENQ  1024  /* second argument to listen() */
 
+#define ERROR 42
+#define SORRY 43
+#define LOG   44
+
+char* logfilename;
 
 int open_listenfd(int port) ;
 
