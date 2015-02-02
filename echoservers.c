@@ -17,7 +17,7 @@
 
 #include "netdef.h"
 
-
+//wo shishi 
 typedef struct { /* a pool of connected descriptors */ 
     int maxfd;        /* largest descriptor in read_set */   
     fd_set read_set;  /* set of all active descriptors */
