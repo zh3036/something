@@ -87,15 +87,6 @@ int main(int argc, char **argv)
 
 
 
-    /*if (argc == 2) {*/
-      /*port = atoi(argv[1]);*/
-    /*}else if(argc==3){*/
-      /*port = atoi(argv[1]);*/
-    /*}else{*/
-      /*fprintf(stderr, "usage: %s <port>\n", argv[0]);*/
-      /*//exit(0);*/
-    /*}*/
-
 
     listenfd = Open_listenfd(port);
     init_pool(listenfd, &pool);

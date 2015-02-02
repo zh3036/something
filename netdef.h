@@ -36,7 +36,7 @@ int open_listenfd(int port) ;
 
 void unix_error(char *msg) /* unix-style error */;
 
-void Close(int fd) ;
+int Close(int fd) ;
 
 int Accept(int s, struct sockaddr *addr, socklen_t *addrlen) ;
 
