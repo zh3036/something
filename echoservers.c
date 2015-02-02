@@ -45,6 +45,12 @@ int main(int argc, char **argv)
     //printf("we have %d args\n",argc);
     port=port+argc;
 
+    if(argc != 8){
+    	printf("somehing wrong here..not enough argcs\
+    		usage \n");
+    }
+
+
     /*if (argc == 2) {*/
       /*port = atoi(argv[1]);*/
     /*}else if(argc==3){*/
@@ -53,6 +59,8 @@ int main(int argc, char **argv)
       /*fprintf(stderr, "usage: %s <port>\n", argv[0]);*/
       /*//exit(0);*/
     /*}*/
+
+
     port = atoi(argv[1]);
 
     listenfd = Open_listenfd(port);
