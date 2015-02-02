@@ -1,4 +1,10 @@
 1. it handles small msg not well, when using the given checker for less than 3 bytes, it does not 
 always send back the right string.
 
+2. what is the point to timeout the select?
 
+3. since we do not block and give a timeout to each send and recv we need to keep track that
+whether this fd is for writing or reading right? However, since we can choose to write and not really block, we do not need to really timeout write?
+
+
+do not keep the buffer forever
