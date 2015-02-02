@@ -35,12 +35,14 @@ void unix_error(char *msg) /* unix-style error */
 
 
 
-void Close(int fd) 
+int Close(int fd) 
 {
     int rc;
 
     if ((rc = close(fd)) < 0)
 	unix_error("Close error");
+    
+    return rc;
 }
 
 int Accept(int s, struct sockaddr *addr, socklen_t *addrlen) 
@@ -71,10 +73,10 @@ int Select(int  n, fd_set *readfds, fd_set *writefds,
     return rc;
 }
 
-void app_error(char *msg) /* application error */
-{
-    fprintf(stderr, "%s\n", msg);
-    //exit(0);
-}
+// void app_error(char *msg) /* application error */
+// {
+//     fprintf(stderr, "%s\n", msg);
+//     //exit(0);
+// }
 
 
