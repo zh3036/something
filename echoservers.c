@@ -33,9 +33,17 @@ void check_clients(pool *p);
 
 int full_flag=0;
 
+#define FILENAMELENGTH 100
+
 int main(int argc, char **argv)
 {
-    int listenfd, connfd, port,i;
+    int listenfd, connfd, port,ports,i;
+
+    char LogFile[FILENAMELENGTH], LockFile[FILENAMELENGTH];
+    char wwwFolder[FILENAMELENGTH], cgiScript[FILENAMELENGTH];
+    char privateKey[FILENAMELENGTH],certificate[FILENAMELENGTH];
+
+    
     socklen_t clientlen = sizeof(struct sockaddr_in);
     struct sockaddr_in clientaddr;
     static pool pool; 
@@ -45,10 +53,23 @@ int main(int argc, char **argv)
     //printf("we have %d args\n",argc);
     port=port+argc;
 
-    if(argc != 8){
+    if(argc != 9){
     	printf("somehing wrong here..not enough argcs\
     		usage \n");
-    }
+    } else 
+    {
+    	port = atoi(argv[1]);
+    	ports = atoi(argv[2]);
+      strcpy(LogFile,argv[3]);
+      strcpy(LockFile, argv[4]);
+      strcpy(wwwFolder,argv[5]);
+      strcpy(cgiScript,argv[6]);
+      strcpy(privateKey, argv[7]);
+      strcpy(certificate, argv[8]);
+      
+    } 
+    
+
 
 
     /*if (argc == 2) {*/
@@ -60,8 +81,6 @@ int main(int argc, char **argv)
       /*//exit(0);*/
     /*}*/
 
-
-    port = atoi(argv[1]);
 
     listenfd = Open_listenfd(port);
     init_pool(listenfd, &pool);
