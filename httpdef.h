@@ -23,3 +23,12 @@ ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen)
 ;
 
 void rio_readinitb(rio_t *rp, int fd) ;
+
+void client_error(int fd, char *cause, char *errnum, 
+    char *shortmsg, char *longmsg);
+
+int parse_uri(char *uri, char *hostname, char *path, 
+	int *port);
+
+int make_requestlines(int fd, char *buf, char *method, 
+	char *uri, char *host, char *path, int *port);

@@ -1,20 +1,12 @@
-
+/*
+* file: http_session.h
+*/
 #ifndef HTTP_SESSION_H
 #define HTTP_SESSION_H
 
 #include <netinet/in.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/select.h>
-#include <sys/time.h>
-#include <netinet/in.h>
 
+#define  TIME_BUFFER_SIZE 40
 
 #define RECV_BUFFER_SIZE    1024        /* 1KB of receive buffer */
 #define    SEND_BUFFER_SIZE    1050000        /* 1.xMB of send buffer */
@@ -35,7 +27,8 @@
 
 
 #define ALLOW                "Allow:GET"    /* the server allow GET request method*/
-#define    SERVER                "Liso/1.0"
+#define    SERVER                "Server:Mutu(0.1 Alpha)/Linux"
+
 
 /* if the connect protocol is http then this function deal with it */
 int http_session(int *connect_fd, struct sockaddr_in *client_addr);
@@ -47,8 +40,7 @@ int is_http_protocol(char *msg_from_client);
 char *get_uri(char *req_header, char *uri_buf);
 
 
-/* get the uri status,access return 0, not exist return 1, 
-permission deny return 2, error return -1 */
+/* get the uri status,access return 0, not exist return 1, permission deny return 2, error return -1 */
 int get_uri_status(char *uri);
 
 
@@ -70,8 +62,6 @@ int set_rep_status();
 int set_error_information(unsigned char *send_buf, int errorno);
 
 
-int reply_normal_information(unsigned char *send_buf, \
-	unsigned char *file_buf, int file_size, char *mime_type);
-
+int reply_normal_information(unsigned char *send_buf, unsigned char *file_buf, int file_size, char *mime_type);
 
 #endif

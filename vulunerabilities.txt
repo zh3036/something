@@ -31,5 +31,13 @@ current read position, and unread byte num
 NEED TO LEAVE ONE FD FOR SENDING BACK THAT THE FD IS FULL
 
 
+i need a function only for making headers
+and rest for body
+
+i need a function to send error code
 
 
+i need to implement last-modified
+
+
+need to change eveyr print and error to log
