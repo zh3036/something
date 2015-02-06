@@ -101,8 +101,8 @@ def main():
 	serverPort = 1234
 	numTrials = 1
 	# numWritesReads = 2
-	numBytes = 5
-	numConnections = 1021
+	numBytes = 50
+	numConnections = 1023
 
 
 	inistring="<ABCDEFGHIJKshadgjhxg832>dy97s78</ABCDEFGHIJKshadgjhxg832>LMNOPQRSTUVWXYZ"

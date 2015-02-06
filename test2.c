@@ -23,7 +23,16 @@
 #include "fdbuf.h"
   
 void test_time();  
-int main(void)
+int main(int argc, char const *argv[])
+{
+  /* code */
+  return 0;
+}
+
+
+
+
+int file_test(void)
 {
         // test_time();
         FILE* f=fopen("test.log", "r");

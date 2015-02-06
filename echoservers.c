@@ -34,13 +34,13 @@ void add_client(int connfd, pool *p);
 void check_clients(pool *p);
 
 
-int full_flag=0;
+// int full_flag=0;
 
 #define FILENAMELENGTH 100
 
 int main(int argc, char **argv)
 {
-  int listenfd, connfd, port,ports,selecnum;
+  int listenfd, connfd, port,ports;
 
   char LogFile[FILENAMELENGTH], LockFile[FILENAMELENGTH];
   char wwwFolder[FILENAMELENGTH], cgiScript[FILENAMELENGTH];
@@ -87,19 +87,28 @@ int main(int argc, char **argv)
   while (1) {
   	/* Wait for listening/connected descriptor(s) to become ready */
   	pool.ready_set = pool.read_set;
+
     // potential bug here , what is largest args select take
-    selecnum=pool.maxfd+1;
-    if(1023<selecnum) selecnum=1023;
-  	pool.nready = Select(selecnum, &pool.ready_set, NULL, NULL, NULL);
+    // if you get a file descriptor with a value as high 
+    //as FD_SETSIZE, you cannot put that descriptor into 
+    // an fd_set.
+    // selecnum=pool.maxfd+1;
+    // if(1023<selecnum) selecnum=1023;
+  	pool.nready = Select(pool.maxfd+1, &pool.ready_set, NULL, NULL, NULL);
 
   	/* If listening descriptor ready, add new client to pool */
-    if (full_flag==0){
-      if (FD_ISSET(listenfd, &pool.ready_set)) { 
-          connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
-          if(connfd>=1022) printf("abnormal %d\n", connfd);
-            add_client(connfd, &pool);
-       }
-      }
+    
+    if (FD_ISSET(listenfd, &pool.ready_set)) { 
+        connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
+        if(connfd>=1022) LogWrite(LOG, "abnormal", "large fd", connfd);
+        if(connfd<FD_SETSIZE)
+          add_client(connfd, &pool);
+        else{
+          LogWrite(SORRY, "no more spare fd", "502", connfd);
+          close(connfd);
+        }
+     }
+    
     check_clients(&pool); 
   }
 	/* Echo a text line from each ready connected descriptor */ 
@@ -128,24 +137,21 @@ void add_client(int connfd, pool *p)
 {
     int i;
     p->nready--;
-      for (i = 0; i < FD_SETSIZE-1; i++){  /* Find an available slot */
+      for (i = 0; i < FD_SETSIZE; i++){  /* Find an available slot */
         if (p->clientfd[i].fd < 0) { 
             /* Add connected descriptor to the pool */
             ini_fd(&(p->clientfd[i]), connfd);
             /* Add the descriptor to descriptor set */
             FD_SET(connfd, &p->read_set);
             /* Update max descriptor and pool highwater mark */
-            if (connfd > p->maxfd ) {
-                if(connfd>=FD_SETSIZE)
-                  printf("%d\n", connfd);
+            if (connfd > p->maxfd ) 
                 p->maxfd = connfd; 
-            }
             if (i > p->maxi)
               p->maxi = i;
             break;
         }
       }
-   if (i == FD_SETSIZE-1){ /* Couldn't find an empty slot */
+   if (i == FD_SETSIZE){ /* Couldn't find an empty slot */
       //this need to further coding
       //modify logwrite to acutlly send the error header
       // need to close the connection
@@ -173,7 +179,7 @@ void check_clients(pool *p)
       if ((n = recv(connfd, buf, MAXLINE,0)) >1) {
         // printf("Server received %d  bytes on fd %d\n", 
         //   n,  connfd);
-        LogWrite(LOG, "server received", "success", connfd);
+        // LogWrite(LOG, "server received", "success", connfd);
         while(n>0){
           tem=send(connfd, buf+tem, n-tem,0); 
           n=n-tem;
@@ -182,7 +188,6 @@ void check_clients(pool *p)
       /* EOF detected, remove descriptor from pool */
       else { 
         Close(connfd);
-        full_flag=0; 
         FD_CLR(connfd, &p->read_set); 
         p->clientfd[i].fd = -1;
       }
