@@ -10,22 +10,10 @@
 
 #include "httpPro.h"
 #include "netdef.h"
+#include "fdbuf.h"
 
 // the struct to keep buffer to resume reading
-typedef struct buf {
-  char* buffer[MAXBUF];
-  char* bufptr;
-  int cnt;
-  struct buf *next;
-} fd_buf;
 
-// the struct to keep time to do time out
-typedef struct {
-  int fd;
-  struct timeval tms;
-  unsigned int ini_time;
-  fd_buf* buf;
-} time_fd;
 
 
 typedef struct { /* a pool of connected descriptors */ 
@@ -34,7 +22,7 @@ typedef struct { /* a pool of connected descriptors */
     fd_set ready_set; /* subset of descriptors ready for reading  */
     int nready;       /* number of ready descriptors from select */   
     int maxi;         /* highest index into client array */
-    int clientfd[FD_SETSIZE];    /* set of active descriptors */
+    time_fd clientfd[FD_SETSIZE];    /* set of active descriptors */
 } pool; 
 
 void init_pool(int listenfd, pool *p);
@@ -111,10 +99,10 @@ int main(int argc, char **argv)
           //add_client(connfd, &pool);
         pool.nready--;
         for (i = 0; i < FD_SETSIZE-1; i++){  /* Find an available slot */
-          if (pool.clientfd[i] < 0) { 
+          if (pool.clientfd[i].fd < 0) { 
               connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
               /* Add connected descriptor to the pool */
-              pool.clientfd[i] = connfd;
+              pool.clientfd[i].fd = connfd;
               /* Add the descriptor to descriptor set */
               FD_SET(connfd, &pool.read_set);
               /* Update max descriptor and pool highwater mark */
@@ -143,7 +131,7 @@ void init_pool(int listenfd, pool *p)
     int i;
     p->maxi = -1;
     for (i=0; i< FD_SETSIZE; i++)  
-      p->clientfd[i] = -1;//-1 means it is ready
+      ini_fd(&(p->clientfd[i]) , -1); //-1 means it is ready
 
     /* Initially, listenfd is only member of select read set */
     p->maxfd = listenfd;
@@ -186,7 +174,7 @@ void check_clients(pool *p)
   int tem;
 
   for (i = 0; (i <= p->maxi) && (p->nready > 0); i++) {
-    connfd = p->clientfd[i];
+    connfd = p->clientfd[i].fd;
     /* If the descriptor is ready, echo a text line from it */
     if ((connfd > 0) && (FD_ISSET(connfd, &p->ready_set))) { 
       p->nready--;
@@ -204,7 +192,7 @@ void check_clients(pool *p)
         Close(connfd);
         full_flag=0; 
         FD_CLR(connfd, &p->read_set); 
-        p->clientfd[i] = -1;
+        p->clientfd[i].fd = -1;
       }
     }
   }
