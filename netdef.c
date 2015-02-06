@@ -1,6 +1,5 @@
 #include "netdef.h"
-#include "log.c"
-
+#include "log.h"
 int open_listenfd(int port) 
 {
     int listenfd, optval=1;

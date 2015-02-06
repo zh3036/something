@@ -3,8 +3,7 @@
 
 #include "netdef.h"
 #include "assert.h"
-#include "log.c"
-#include "httpdef.c"
+
 
 
 typedef struct buf {

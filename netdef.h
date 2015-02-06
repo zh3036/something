@@ -1,7 +1,6 @@
 
 #ifndef NETDEF_H
 #define NETDEF_H
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -17,6 +16,7 @@
 #include <sys/mman.h>
 #include <errno.h>
 #include <math.h>
+#include <pthread.h>
 #include <semaphore.h>
 #include <sys/socket.h>
 #include <netdb.h>

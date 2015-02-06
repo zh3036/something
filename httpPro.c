@@ -1,9 +1,5 @@
 #include "httpPro.h"
 
-
-/*
-* file:http_session.c
-*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,8 +13,12 @@
 #include <netinet/in.h>
 // #include "get_time.h"
 #include "errno.h"
-#include "log.c"
+// #include "log.c"
 #include "time.h"
+
+/*
+* file:http_session.c
+*/
 
 
 

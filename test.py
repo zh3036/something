@@ -15,7 +15,7 @@ def thread_main():
 	threadname = threading.currentThread().getName()
  	start_time=time.time()
  	RECV_TOTAL_TIMEOUT = 0.1
-	RECV_EACH_TIMEOUT = 0.01
+	RECV_EACH_TIMEOUT = 0.05
 
 	# serverHost=gethostbyname('catshark.ics.cs.cmu.edu')
 

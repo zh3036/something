@@ -1,4 +1,6 @@
 #include "netdef.h"
+#include "log.h"
+
 
 void LogWrite( int type, char *s1, char *s2, int num)
 

@@ -8,9 +8,11 @@
 
 
 
-#include "httpPro.h"
-#include "netdef.h"
+// #include "httpPro.h"
+// #include "netdef.h"
 #include "fdbuf.h"
+#include "log.h"
+#include "netdef.h"
 
 // the struct to keep buffer to resume reading
 
@@ -66,12 +68,12 @@ int main(int argc, char **argv)
       strncpy(cgiScript,argv[6],FILENAMELENGTH)[FILENAMELENGTH-1]=0;
       strncpy(privateKey, argv[7],FILENAMELENGTH)[FILENAMELENGTH-1]=0;
       strncpy(certificate, argv[8],FILENAMELENGTH)[FILENAMELENGTH-1]=0;
-      if (access(LogFile, W_OK) || access(LockFile, 0) \
-        ||access(wwwFolder, R_OK)||access(cgiScript, X_OK)\
-        ||access(privateKey, 0)||access(certificate, 0)){
-        fprintf(stderr, "some filename is wrong, plz check\n");
-        exit(0);
-      }
+      // if (access(LogFile, W_OK) || access(LockFile, 0) \
+      //   ||access(wwwFolder, R_OK)||access(cgiScript, X_OK)\
+      //   ||access(privateKey, 0)||access(certificate, 0)){
+      //   fprintf(stderr, "some filename is wrong, plz check\n");
+      //   exit(0);
+      // }
       logfilename = LogFile;
       // logfile need writable
       // www folder need be readable 
@@ -180,8 +182,9 @@ void check_clients(pool *p)
       p->nready--;
       tem=0;
       if ((n = recv(connfd, buf, MAXLINE,0)) >1) {
-        //printf("Server received %d  bytes on fd %d\n", 
+        // printf("Server received %d  bytes on fd %d\n", 
         //   n,  connfd);
+        LogWrite(LOG, "server received", "success", connfd);
         while(n>0){
           tem=send(connfd, buf+tem, n-tem,0); 
           n=n-tem;
