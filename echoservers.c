@@ -11,6 +11,7 @@
 #include "httpPro.h"
 #include "netdef.h"
 
+// the struct to keep buffer to resume reading
 typedef struct buf {
   char* buffer[MAXBUF];
   char* bufptr;
@@ -18,13 +19,14 @@ typedef struct buf {
   struct buf *next;
 } fd_buf;
 
+// the struct to keep time to do time out
 typedef struct {
   int fd;
   struct timeval tms;
   unsigned int ini_time;
-
- 
+  fd_buf* buf;
 } time_fd;
+
 
 typedef struct { /* a pool of connected descriptors */ 
     int maxfd;        /* largest descriptor in read_set */   

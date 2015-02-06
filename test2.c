@@ -1,4 +1,79 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <ctype.h>
+#include <setjmp.h>
+#include <signal.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <errno.h>
+#include <math.h>
+#include <semaphore.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/time.h>
+#include <stdio.h>
 #include "fdbuf.h"
+  
+void test_time();  
+int main(void)
+{
+        // test_time();
+        FILE* f=fopen("test.log", "r");
+        int fd=fileno(f);
+        time_fd tst;
+        ini_fd(&tst,fd);
+        bufload(&tst, 150);
+        char buf[200];
+        printf("%s\n", tst.tail_buf->buffer);
+        // bufread(&tst,buf,100);
+        // printf("%s\n", buf);
+}
+
+int test_string(){
+        char *s;
+        char *e;
+        char b[200]="12345678901234567890";
+        char dst[200];
+        int i;
+        s=b+1;
+        e=b+10;
+        printf("%s\n", s);      
+        printf("%s\n", e);
+        i=e-s;
+        printf("%d\n", i);
+        memcpy(dst, s, i);
+        printf("%s\n", dst);
+
+        return 0;
+}
+
+void test_time(){
+        int i;
+        struct timeval tv;
+        int u=tv.tv_usec;
+        long s=tv.tv_sec;
+
+        for(i = 0; i < 100; i++){
+                for(int j=0;j<10000;j++){;}
+                gettimeofday(&tv, NULL);
+                printf("%d\t%ld\n", tv.tv_usec-u, tv.tv_sec-s);
+                u=tv.tv_usec;
+                        s=tv.tv_sec;
+
+               
+        }
+}
+
+
+
 
 // caculate the time passed since the object is inied
 int elap_time(time_fd* tf){
