@@ -1,20 +1,20 @@
 #include "httpPro.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/select.h>
-#include <sys/time.h>
-#include <netinet/in.h>
-// #include "get_time.h"
-#include "errno.h"
-// #include "log.c"
-#include "time.h"
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
+// #include <unistd.h>
+// #include <sys/stat.h>
+// #include <fcntl.h>
+// #include <sys/types.h>
+// #include <sys/socket.h>
+// #include <sys/select.h>
+// #include <sys/time.h>
+// #include <netinet/in.h>
+// // #include "get_time.h"
+// #include "errno.h"
+// // #include "log.c"
+// #include "time.h"
 
 /*
 * file:http_session.c

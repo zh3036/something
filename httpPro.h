@@ -5,6 +5,7 @@
 #define HTTP_SESSION_H
 
 #include <netinet/in.h>
+#include "netdef.h"
 
 #define  TIME_BUFFER_SIZE 40
 
