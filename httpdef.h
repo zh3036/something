@@ -30,5 +30,5 @@ void client_error(int fd, char *cause, char *errnum,
 int parse_uri(char *uri, char *hostname, char *path, 
 	int *port);
 
-int make_requestlines(int fd, char *buf, char *method, 
+int make_requestlines(/*int fd,*/ char *buf, char *method, 
 	char *uri, char *host, char *path, int *port);

@@ -141,7 +141,7 @@ int parse_uri(char *uri, char *hostname, char *path, int *port)
   return 0;
 }
 
-int make_requestlines(int fd, char *buf, char *method, char *uri, char *host, char *path, int *port) {
+int make_requestlines(/*int fd,*/ char *buf, char *method, char *uri, char *host, char *path, int *port) {
 	//this can be use for checking for methods
     sscanf(buf, "%s %s", method, uri);
     if (strcasecmp(method, "GET")) {
