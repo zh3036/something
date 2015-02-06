@@ -46,9 +46,11 @@ void add_buf(time_fd* tf){
 ;}
 
 int bufread(time_fd* tf,size_t n){
-  if(!(tf->fbuf)) //create the first buf
+  if(!(tf->fbuf)) //if no buf before create the first buf
     tf->fbuf = ini_buf();
-  if(tf->fbuf->cnt==MAXBUF)
+  if(tf->fbuf->cnt==MAXBUF || 
+      (tf->fbuf->cnt>MAXBUF && 
+       tf->fbuf->cnt % MAXBUF ==0) ) // if buf is full, add a buf
     add_buf(tf);
   //check how many space left
   int empty=MAXBUF - (tf->fbuf->cnt % MAXBUF);
