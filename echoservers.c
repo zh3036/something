@@ -40,7 +40,7 @@ int full_flag=0;
 
 int main(int argc, char **argv)
 {
-  int listenfd, connfd, port,ports;
+  int listenfd, connfd, port,ports,selecnum;
 
   char LogFile[FILENAMELENGTH], LockFile[FILENAMELENGTH];
   char wwwFolder[FILENAMELENGTH], cgiScript[FILENAMELENGTH];
@@ -50,6 +50,7 @@ int main(int argc, char **argv)
   socklen_t clientlen = sizeof(struct sockaddr_in);
   struct sockaddr_in clientaddr;
   static pool pool; 
+  printf("%d\n", FD_SETSIZE);
 
 
   port=1234;
@@ -86,12 +87,16 @@ int main(int argc, char **argv)
   while (1) {
   	/* Wait for listening/connected descriptor(s) to become ready */
   	pool.ready_set = pool.read_set;
-  	pool.nready = Select(pool.maxfd+1, &pool.ready_set, NULL, NULL, NULL);
+    // potential bug here , what is largest args select take
+    selecnum=pool.maxfd+1;
+    if(1023<selecnum) selecnum=1023;
+  	pool.nready = Select(selecnum, &pool.ready_set, NULL, NULL, NULL);
 
   	/* If listening descriptor ready, add new client to pool */
     if (full_flag==0){
       if (FD_ISSET(listenfd, &pool.ready_set)) { 
           connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
+          if(connfd>=1022) printf("abnormal %d\n", connfd);
             add_client(connfd, &pool);
        }
       }
@@ -130,8 +135,11 @@ void add_client(int connfd, pool *p)
             /* Add the descriptor to descriptor set */
             FD_SET(connfd, &p->read_set);
             /* Update max descriptor and pool highwater mark */
-            if (connfd > p->maxfd) 
-              p->maxfd = connfd; 
+            if (connfd > p->maxfd ) {
+                if(connfd>=FD_SETSIZE)
+                  printf("%d\n", connfd);
+                p->maxfd = connfd; 
+            }
             if (i > p->maxi)
               p->maxi = i;
             break;
@@ -141,7 +149,8 @@ void add_client(int connfd, pool *p)
       //this need to further coding
       //modify logwrite to acutlly send the error header
       // need to close the connection
-     LogWrite(SORRY, "no more spare fd", "502", i);
+     LogWrite(SORRY, "no more spare fd", "502", connfd);
+     close(connfd);
    }
  }
       

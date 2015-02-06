@@ -30,7 +30,7 @@ int open_listenfd(int port)
 }
 void unix_error(char *msg, int fd) /* unix-style error */
 {
-    fprintf(stderr, "%s: %s\n", msg, strerror(errno));
+    // fprintf(stderr, "%s: %s\n", msg, strerror(errno));
     LogWrite(LOG, msg, strerror(errno), fd);
     //exit(0);
 }
@@ -71,7 +71,7 @@ int Select(int  n, fd_set *readfds, fd_set *writefds,
     int rc;
 
     if ((rc = select(n, readfds, writefds, exceptfds, timeout)) < 0)
-	unix_error("Select error",n);
+	unix_error("Select error", n);
     return rc;
 }
 
