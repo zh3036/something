@@ -9,6 +9,7 @@ fd_buf* ini_buf(){
   fd_buf* fb;
   fb=(fd_buf*)malloc(sizeof(fd_buf));
   fb->bufptr_end=fb->buffer;
+  fb->bufptr_start=fb->buffer;
   fb->next=NULL;
   return fb;
 }
