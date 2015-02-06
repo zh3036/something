@@ -30,11 +30,19 @@ int main(void)
         int fd=fileno(f);
         time_fd tst;
         ini_fd(&tst,fd);
-        bufload(&tst, 150);
+        bufload(&tst, 2);
         char buf[200];
         printf("%s\n", tst.tail_buf->buffer);
-        // bufread(&tst,buf,100);
-        // printf("%s\n", buf);
+        printf("---------------\n");
+        bufread(&tst,buf,2);
+        printf("%s\n", buf);
+        for (int i = 0; i < 10; ++i)
+        {
+                bufload(&tst, 2);
+                bufread(&tst,buf,3);
+                printf("%s\n", buf);
+        }
+
 }
 
 int test_string(){
@@ -84,6 +92,7 @@ fd_buf* ini_buf(){
   fd_buf* fb;
   fb=(fd_buf*)malloc(sizeof(fd_buf));
   fb->bufptr_end=fb->buffer;
+  fb->bufptr_start=fb->buffer;
   fb->next=NULL;
   return fb;
 }
