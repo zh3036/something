@@ -42,6 +42,7 @@ void serveHG(int fd,char* method, char* path);
 
 void serveHG(int fd,char* method, char* path){
   struct stat sbuf;
+  LogWrite(LOG, method, path, fd);
   if (stat(path, &sbuf) < 0) {
     LogWrite(SORRY, "404", "FILE NOT FOUND", fd);
   }
@@ -71,7 +72,7 @@ void read_requesthdrs(time_fd *tf,int* conn,int *length)
     if(strncasecmp("content-length:",left,14)==0){
       *length=atoi(right);
     }
-    LogWrite(LOG, "headers:", buf, tf->fd);
+    // LogWrite(LOG, "headers:", buf, tf->fd);
   } while(strcmp(buf, "\r\n"));
   return;
 }
@@ -118,6 +119,7 @@ int main(int argc, char **argv)
     //   exit(0);
     // }
     logfilename = LogFile;
+    LogWrite(LOG, "prove", "can write", -1);
     // logfile need writable
     // www folder need be readable 
     // cgiscript need be runnable
@@ -223,7 +225,7 @@ void check_clients(pool *p)
     if ((connfd > 0) && (FD_ISSET(connfd, &p->ready_set))) { 
       p->nready--;
       
-      for(j=0;j<5 && isfinish_bufload(&tf);j++){
+      for(j=0;j<5 && !isfinish_bufload(&tf);j++){
         bufload(&tf, MAXBUF);
       }
 
@@ -256,10 +258,10 @@ void check_clients(pool *p)
               // here process post
             }                             
           } else{ //method here is either GET or HEAD
-            if(path[0]=='/') 
+            if(strcmp(path,"/")==0) 
               serveHG(tf.fd,method,"index.html");
             else
-              serveHG(tf.fd,method,path);
+              serveHG(tf.fd,method,path+1);
             //process HEAD
             // if it is GET then send also the file
           }  
@@ -295,17 +297,16 @@ void check_clients(pool *p)
         //  b. HEAD : then generate headers send back 
         //      1.Connection
         //      2.Date
-        //      3. Server : Liso/1.0
-        //      4. content-length
-        //      5. content-type
         //      6. last modified
-        //   
+        //      3. Server : Liso/1.0 ***
+        //      4. content-length ****
+        //      5. content-type***
         //  c. GET : use HEAD's headers' and with filecontent   
         //  d. other: not implement 501 
         //  a. cgi --> not implemente
-        //  b. find the path, if not exist->404
-        //  c. if exist, make the reply headers
-        //  d. send the headers, send the body
+        //  b. find the path, if not exist->404 ****
+        //  c. if exist, make the reply headers ***
+        //  d. send the headers, send the body****
         //  e. if in the header comming in there are connection closed
         //     then close the connfd ****
          // end processing

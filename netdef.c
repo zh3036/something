@@ -95,7 +95,7 @@ ssize_t rio_writen(int fd, void *usrbuf, size_t n)
 
 void Rio_writen(int fd, void *usrbuf, size_t n) 
 {
-    if (rio_writen(fd, usrbuf, n) != n)
+    if ((size_t)rio_writen(fd, usrbuf, n) != n)
       LogWrite(SORRY, "500", "internet server", fd);
 }
 
