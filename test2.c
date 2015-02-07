@@ -51,6 +51,7 @@ int file_test(void)
                 bufread(&tst,buf,3);
                 printf("%s\n", buf);
         }
+        return 1;
 
 }
 

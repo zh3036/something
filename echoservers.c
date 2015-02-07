@@ -88,12 +88,10 @@ int main(int argc, char **argv)
   	/* Wait for listening/connected descriptor(s) to become ready */
   	pool.ready_set = pool.read_set;
 
-    // potential bug here , what is largest args select take
     // if you get a file descriptor with a value as high 
     //as FD_SETSIZE, you cannot put that descriptor into 
     // an fd_set.
-    // selecnum=pool.maxfd+1;
-    // if(1023<selecnum) selecnum=1023;
+
   	pool.nready = Select(pool.maxfd+1, &pool.ready_set, NULL, NULL, NULL);
 
   	/* If listening descriptor ready, add new client to pool */
@@ -155,7 +153,8 @@ void add_client(int connfd, pool *p)
       //this need to further coding
       //modify logwrite to acutlly send the error header
       // need to close the connection
-     LogWrite(SORRY, "no more spare fd", "502", connfd);
+     LogWrite(SORRY, "404", 
+      "File Not Found", connfd);
      close(connfd);
    }
  }

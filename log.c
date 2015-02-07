@@ -17,15 +17,15 @@ void LogWrite( int type, char *s1, char *s2, int num)
       break;
 
     case SORRY: 
+
       sprintf(logbuffer, \
-        "<HTML><BODY><H1>nweb Web Server Sorry: \
-        %s %s</H1></BODY></HTML>\r\n", s1, s2);
+        "HTTP/1.1 %s %s\r\n\r\n\r\n",s1 ,s2);
       write(num,logbuffer,strlen(logbuffer));
-      sprintf(logbuffer,"SORRY: %s:%s",s1, s2); 
+      sprintf(logbuffer,"SORRY: %s:%s:in fd %d",s1,s2,num); 
       break;
 
     case LOG: 
-      sprintf(logbuffer," INFO: %s:%s:%d",s1, s2,num); 
+      sprintf(logbuffer,"INFO: %s:%s:%d",s1, s2,num); 
       break;
 
   }
