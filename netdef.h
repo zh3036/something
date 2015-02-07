@@ -36,6 +36,16 @@ typedef struct sockaddr SA;
 #define ERROR 42
 #define SORRY 43
 #define LOG   44
+/*
+200_OK -- send proper object data back 
+404_NOT_FOUND -- when objects do not exist in the file system
+411_LENGTH_REQUIRED -- for POSTs
+500_INTERNAL_SERVER_ERROR -- syscall failure right now/other failures
+501_NOT_IMPLEMENTED -- for any request you do not handle
+503_SERVICE_UNAVAILABLE -- if you can not accept anymore connections
+505_HTTP_VERSION_NOT_SUPPORTED -- if you get anything other than 1.1
+*/
+
 
 char* logfilename;
 

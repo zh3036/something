@@ -77,6 +77,12 @@ int bufread(time_fd* src_tf, char* dst_buf  ,size_t n){
   return toread;
 }
 
+int isfinish_bufload(time_fd* tf){
+  if (strstr(tf->tail_buf->buffer,"\r\n\r\n"))
+    return 1;
+  return 0;
+}
+
 int bufdestroy(time_fd* tf){ 
   while(tf->header_buf!=NULL){
     fd_buf* bf=tf->header_buf;

@@ -23,9 +23,15 @@
 #include "fdbuf.h"
   
 void test_time();  
-int main(int argc, char const *argv[])
+int main()
 {
   /* code */
+  char a[100]="abcdf\r\n\r";
+  char *b = strchr(a, 'b');
+  printf("%s\n", b);
+  char* c = strstr(a, "\r\n\r\n");
+  printf("%s\n", c);
+
   return 0;
 }
 

@@ -165,31 +165,42 @@ void add_client(int connfd, pool *p)
 /* $begin check_clients */
 void check_clients(pool *p) 
 {
-  int i, connfd, n;
+  int i, connfd, n,j;
+  time_fd tf;
   char buf[MAXLINE]; 
   int tem;
 
   for (i = 0; (i <= p->maxi) && (p->nready > 0); i++) {
-    connfd = p->clientfd[i].fd;
+    tf=p->clientfd[i];
+    connfd = tf.fd;
     /* If the descriptor is ready, echo a text line from it */
     if ((connfd > 0) && (FD_ISSET(connfd, &p->ready_set))) { 
       p->nready--;
-      tem=0;
-      if ((n = recv(connfd, buf, MAXLINE,0)) >1) {
-        // printf("Server received %d  bytes on fd %d\n", 
-        //   n,  connfd);
-        // LogWrite(LOG, "server received", "success", connfd);
-        while(n>0){
-          tem=send(connfd, buf+tem, n-tem,0); 
-          n=n-tem;
-        }
+      for(j=0;(j<5) && isfinish_bufload(&tf);j++){
+        bufload(&tf, MAXBUF);
       }
-      /* EOF detected, remove descriptor from pool */
-      else { 
-        Close(connfd);
-        FD_CLR(connfd, &p->read_set); 
-        p->clientfd[i].fd = -1;
+      if(isfinish_bufload(&tf)){
+        // start processing
+        bufdestroy(&tf);
+        FD_CLR(connfd, &p->read_set);
+        p->clientfd[i].fd=-1;
       }
+
+
+      // tem=0;
+      // if ((n = recv(connfd, buf, MAXLINE,0)) >1) {
+      //   // LogWrite(LOG, "server received", "success", connfd);
+      //   while(n>0){
+      //     tem=send(connfd, buf+tem, n-tem,0); 
+      //     n=n-tem;
+      //   } 
+      // }
+      // /* EOF detected, remove descriptor from pool */
+      // else { 
+      //   Close(connfd);
+      //   FD_CLR(connfd, &p->read_set); 
+      //   p->clientfd[i].fd = -1;
+      // }
     }
   }
 }
