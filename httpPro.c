@@ -1,25 +1,5 @@
 #include "httpPro.h"
 
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string.h>
-// #include <unistd.h>
-// #include <sys/stat.h>
-// #include <fcntl.h>
-// #include <sys/types.h>
-// #include <sys/socket.h>
-// #include <sys/select.h>
-// #include <sys/time.h>
-// #include <netinet/in.h>
-// // #include "get_time.h"
-// #include "errno.h"
-// // #include "log.c"
-// #include "time.h"
-
-/*
-* file:http_session.c
-*/
-
 
 
 char *get_time_str(char *time_buf)
@@ -45,119 +25,6 @@ char *get_time_str(char *time_buf)
     strcat(time_buf, str_ptr);
     return time_buf;
 }
-
-int http_session(int *connect_fd, struct sockaddr_in *client_addr)
-{
-    char recv_buf[RECV_BUFFER_SIZE + 1];            /* server socket receive buffer */
-    unsigned char send_buf[SEND_BUFFER_SIZE + 1];    /* server socket send bufrer */
-    unsigned char file_buf[FILE_MAX_SIZE + 1];
-    memset(recv_buf, '\0', sizeof(recv_buf));
-    memset(send_buf, '\0', sizeof(send_buf));
-    memset(file_buf, '\0', sizeof(file_buf));
-
-    char uri_buf[URI_SIZE + 1];                        /* store the the uri request from client */
-    memset(uri_buf, '\0', sizeof(uri_buf));
-
-    int maxfd = *connect_fd + 1;
-    fd_set read_set;
-    FD_ZERO(&read_set);
-
-    struct timeval timeout;
-    timeout.tv_sec = TIME_OUT_SEC;
-    timeout.tv_usec = TIME_OUT_USEC;
-
-
-    int flag = 1;
-    int res = 0;
-    int read_bytes = 0;
-    int send_bytes = 0;
-    int file_size = 0;
-    char *mime_type;
-    int uri_status;
-    FD_SET(*connect_fd, &read_set);
-    while(flag)
-    {
-        
-        res = select(maxfd, &read_set, NULL, NULL, &timeout);
-        switch(res)
-        {
-            case -1:
-             perror("select() error. in http_sesseion.c");
-             close(*connect_fd);
-             return -1;
-             break;
-            case 0:            /* time out, continue to select */
-             continue;
-             break;
-            default:        /* there are some file-descriptor's status changed */
-             if(FD_ISSET(*connect_fd, &read_set))
-             {
-                memset(recv_buf, '\0', sizeof(recv_buf));
-                if((read_bytes = recv(*connect_fd, recv_buf, RECV_BUFFER_SIZE, 0)) == 0)
-                {
-                    /* client close the connection */
-                    return 0;
-                }
-                else if(read_bytes > 0)        /* there are some data from client */
-                {
-                    if(is_http_protocol(recv_buf) == 0)    /* check is it HTTP protocol */
-                    {
-                        fprintf(stderr, "Not http protocol.\n");
-                        close(*connect_fd);
-                        return -1;
-                    }
-                    else        /* http protocol */
-                    {
-                        memset(uri_buf, '\0', sizeof(uri_buf));
-                        if(get_uri(recv_buf, uri_buf) == NULL)    /* get the uri from http request head */
-                        {
-                            uri_status = URI_TOO_LONG;
-
-                        }
-                        else
-                        {
-                            printf("URI:%s\n", uri_buf);
-                            uri_status = get_uri_status(uri_buf);
-                            switch(uri_status)
-                            {
-                                case FILE_OK:
-                                 printf("file ok\n");
-                                 mime_type = get_mime_type(uri_buf);
-                                 printf("mime type: %s\n", mime_type);
-                                 file_size = get_file_disk(uri_buf, file_buf);
-                                 send_bytes = reply_normal_information(send_buf, file_buf, file_size, mime_type);
-                                    
-                        //         send(*connect_fd, send_buf, send_bytes, 0);
-
-
-                                 break;
-                                case FILE_NOT_FOUND:    /* file not found on server */
-                                 printf("in switch on case FILE_NOT_FOUND\n");
-                                 send_bytes = set_error_information(send_buf, FILE_NOT_FOUND);
-                                 
-                                 break;    
-                                case FILE_FORBIDEN:        /* server have no permission to read the request file */
-                                 break;
-                                case URI_TOO_LONG:        /* the request uri is too long */
-
-                                 break;
-                                default:
-                                 break;
-                            }
-                            
-                         send(*connect_fd, send_buf, send_bytes, 0);
-                        }
-                    }
-                }
-             }
-
-        }
-
-    }
-
-    return 0;
-}
-
 
 
 
@@ -330,69 +197,6 @@ int get_file_disk(char *uri, unsigned char *file_buf)
     return read_count;
 }
 
-
-int set_error_information(unsigned char *send_buf, int errorno)
-{
-    register int index = 0;
-    register int len = 0;
-    char *str = NULL;
-    switch(errorno)
-    {
-
-        case FILE_NOT_FOUND:
-            printf("In set_error_information XXFILE_NOT_FOUND case\n");
-            str = "HTTP/1.1 404 File Not Found\r\n";
-            len = strlen(str);
-            memcpy(send_buf + index, str, len);
-            index += len;
-            printf("1\n");
-
-            len = strlen(SERVER);
-            memcpy(send_buf + index, SERVER, len);
-            index += len;
-
-            memcpy(send_buf + index, "\r\nDate:", 7);            
-            index += 7;
-            printf("2\n");
-            
-            char time_buf[TIME_BUFFER_SIZE];
-            memset(time_buf, '\0', sizeof(time_buf));
-            get_time_str(time_buf);
-            len = strlen(time_buf);
-            memcpy(send_buf + index, time_buf, len);
-            index += len;
-            printf("3\n");
-            str = "\r\nContent-Type:text/html\r\nContent-Length:";
-            len = strlen(str);
-            memcpy(send_buf + index, str, len);
-            index += len;
-            
-            str = "\r\n\r\n<html><head></head><body>404 File not found<br/>Please check your url,and try it again!</body></html>";
-            len = strlen(str);
-            int htmllen = len;
-            char num_len[5];
-            memset(num_len, '\0', sizeof(num_len));
-            sprintf(num_len, "%d", len);
-            printf("4\n");
-            len = strlen(num_len);
-            memcpy(send_buf + index, num_len, len);
-            index += len;
-            printf("5\n");
-            memcpy(send_buf + index, str, htmllen);
-            index += htmllen;
-            printf("did you finish copy?\n");
-            break;
-        
-
-        default:
-            break;
-        
-    }
-    printf("did you return?\n");
-    return index;
-}
-
-
 int reply_normal_information(unsigned char *send_buf, unsigned char *file_buf, int file_size, char *mime_type)
 {
     char *str = "HTTP/1.1 200 OK\r\nServer:Mutu/Linux(0.1)\r\nDate:";
@@ -432,5 +236,121 @@ int reply_normal_information(unsigned char *send_buf, unsigned char *file_buf, i
     memcpy(send_buf + index, file_buf, file_size);
     index += file_size;
     return index;
-    
+
 }
+
+
+
+
+int http_session(int *connect_fd, struct sockaddr_in *client_addr)
+{
+    char recv_buf[RECV_BUFFER_SIZE + 1];            /* server socket receive buffer */
+    unsigned char send_buf[SEND_BUFFER_SIZE + 1];    /* server socket send bufrer */
+    unsigned char file_buf[FILE_MAX_SIZE + 1];
+    memset(recv_buf, '\0', sizeof(recv_buf));
+    memset(send_buf, '\0', sizeof(send_buf));
+    memset(file_buf, '\0', sizeof(file_buf));
+
+    char uri_buf[URI_SIZE + 1];                        /* store the the uri request from client */
+    memset(uri_buf, '\0', sizeof(uri_buf));
+
+    int maxfd = *connect_fd + 1;
+    fd_set read_set;
+    FD_ZERO(&read_set);
+
+    struct timeval timeout;
+    timeout.tv_sec = TIME_OUT_SEC;
+    timeout.tv_usec = TIME_OUT_USEC;
+
+
+    int flag = 1;
+    int res = 0;
+    int read_bytes = 0;
+    int send_bytes = 0;
+    int file_size = 0;
+    char *mime_type;
+    int uri_status;
+    FD_SET(*connect_fd, &read_set);
+    while(flag)
+    {
+        
+        res = select(maxfd, &read_set, NULL, NULL, &timeout);
+        switch(res)
+        {
+            case -1:
+             perror("select() error. in http_sesseion.c");
+             close(*connect_fd);
+             return -1;
+             break;
+            case 0:            /* time out, continue to select */
+             continue;
+             break;
+            default:        /* there are some file-descriptor's status changed */
+             if(FD_ISSET(*connect_fd, &read_set))
+             {
+                memset(recv_buf, '\0', sizeof(recv_buf));
+                if((read_bytes = recv(*connect_fd, recv_buf, RECV_BUFFER_SIZE, 0)) == 0)
+                {
+                    /* client close the connection */
+                    return 0;
+                }
+                else if(read_bytes > 0)        /* there are some data from client */
+                {
+                    if(is_http_protocol(recv_buf) == 0)    /* check is it HTTP protocol */
+                    {
+                        fprintf(stderr, "Not http protocol.\n");
+                        close(*connect_fd);
+                        return -1;
+                    }
+                    else        /* http protocol */
+                    {
+                        memset(uri_buf, '\0', sizeof(uri_buf));
+                        if(get_uri(recv_buf, uri_buf) == NULL)    /* get the uri from http request head */
+                        {
+                            uri_status = URI_TOO_LONG;
+
+                        }
+                        else
+                        {
+                            printf("URI:%s\n", uri_buf);
+                            uri_status = get_uri_status(uri_buf);
+                            switch(uri_status)
+                            {
+                                case FILE_OK:
+                                 printf("file ok\n");
+                                 mime_type = get_mime_type(uri_buf);
+                                 printf("mime type: %s\n", mime_type);
+                                 file_size = get_file_disk(uri_buf, file_buf);
+                                 send_bytes = reply_normal_information(send_buf, file_buf, file_size, mime_type);
+                                    
+                        //         send(*connect_fd, send_buf, send_bytes, 0);
+
+
+                                 break;
+                                case FILE_NOT_FOUND:    /* file not found on server */
+                                 printf("in switch on case FILE_NOT_FOUND\n");
+                                 send_bytes = set_error_information(send_buf, FILE_NOT_FOUND);
+                                 
+                                 break;    
+                                case FILE_FORBIDEN:        /* server have no permission to read the request file */
+                                 break;
+                                case URI_TOO_LONG:        /* the request uri is too long */
+
+                                 break;
+                                default:
+                                 break;
+                            }
+                            
+                         send(*connect_fd, send_buf, send_bytes, 0);
+                        }
+                    }
+                }
+             }
+
+        }
+
+    }
+
+    return 0;
+}
+

@@ -199,7 +199,7 @@ void check_clients(pool *p)
   char method[FILENAMELENGTH], path[FILENAMELENGTH];
   char version[FILENAMELENGTH];
   char *v;
-
+  memset(buf, '0', MAXLINE);
 
 
   for (i = 0; (i <= p->maxi) && (p->nready > 0); i++) {
@@ -255,7 +255,10 @@ void check_clients(pool *p)
           tem=bufread(&tf, post_buf, tf.pcnt);
           tf.pcnt-=tem;
         }
-        if(tf.pcnt<=0) tf.p_flag=0;
+        if(tf.pcnt<=0) {
+          tf.p_flag=0;
+          LogWrite(SORRY, "200", "OK", tf.fd);
+        }
       }
     }
   }
@@ -265,20 +268,28 @@ void check_clients(pool *p)
         // 1. read the request line  ***
         //  a. if it not HTTP/1.1   ****
         //      505_HTTP_VERSION_NOT_SUPPORTED ***
-        // 2. parse the request line to get method
-        //  a. POST : then just send 200 back
-        //    1. length required 411
-        //    2. receive the rest body but do nothing
-        //  b. HEAD : then generate headers send back
-        //  c. GET : use HEAD's headers' and with filecontent   
-        //  d. other: not implement 501
+        // 2. parse the request line to get method****
+        //  a. POST : then just send 200 back ***
+        //    1. length required 411 ***
+        //    2. receive the rest body but do nothing ***
+
         // 3. for HEAD and GET , we get the path
+        //  b. HEAD : then generate headers send back
+        //      1.Connection
+        //      2.Date
+        //      3. Server : Liso/1.0
+        //      4. content-length
+        //      5. content-type
+        //      6. last modified
+        //   
+        //  c. GET : use HEAD's headers' and with filecontent   
+        //  d. other: not implement 501 
         //  a. cgi --> not implemente
         //  b. find the path, if not exist->404
         //  c. if exist, make the reply headers
         //  d. send the headers, send the body
         //  e. if in the header comming in there are connection closed
-        //     then close the connfd
+        //     then close the connfd ****
          // end processing
         // the code for closing and destory a tf
         // bufdestroy(&tf);

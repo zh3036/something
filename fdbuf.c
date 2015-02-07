@@ -7,7 +7,7 @@ int elap_time(time_fd* tf){
 
 fd_buf* ini_buf(){
   fd_buf* fb;
-  fb=(fd_buf*)malloc(sizeof(fd_buf));
+  fb=(fd_buf*)calloc(sizeof(fd_buf),1);
   fb->bufptr_end=fb->buffer;
   fb->bufptr_start=fb->buffer;
   fb->next=NULL;
