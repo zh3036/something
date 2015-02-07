@@ -1,5 +1,5 @@
 #include "netdef.h"
-#include "log.h"
+
 int open_listenfd(int port) 
 {
     int listenfd, optval=1;
@@ -74,7 +74,54 @@ int Select(int  n, fd_set *readfds, fd_set *writefds,
 	unix_error("Select error", n);
     return rc;
 }
+ssize_t rio_writen(int fd, void *usrbuf, size_t n) 
+{
+    size_t nleft = n;
+    ssize_t nwritten;
+    char *bufp = (char*)usrbuf;
 
+    while (nleft > 0) {
+    if ((nwritten = write(fd, bufp, nleft)) <= 0) {
+        if (errno == EINTR)  /* interrupted by sig handler return */
+        nwritten = 0;    /* and call write() again */
+        else
+        return -1;       /* errorno set by write() */
+    }
+    nleft -= nwritten;
+    bufp += nwritten;
+    }
+    return n;
+}
+
+void Rio_writen(int fd, void *usrbuf, size_t n) 
+{
+    if (rio_writen(fd, usrbuf, n) != n)
+      LogWrite(SORRY, "500", "internet server", fd);
+}
+
+int Open(const char *pathname, int flags, mode_t mode) 
+{
+    int rc;
+    char *a=(char*)pathname;
+    if ((rc = open(pathname, flags, mode))  < 0)
+      LogWrite(ERROR, a, "open error", flags);
+    return rc;
+}
+
+void *Mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset) 
+{
+    void *ptr;
+
+    if ((ptr = mmap(addr, len, prot, flags, fd, offset)) == ((void *) -1))
+        LogWrite(ERROR, "mmap error", (char*)addr, fd);
+    return(ptr);
+}
+
+void Munmap(void *start, size_t length) 
+{
+    if (munmap(start, length) < 0)
+    unix_error("munmap error",-1);
+}
 // void app_error(char *msg) /* application error */
 // {
 //     fprintf(stderr, "%s\n", msg);

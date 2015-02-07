@@ -20,7 +20,8 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
+// #include "netdef.h"
+#include "log.h"
 /* $begin sockaddrdef */
 typedef struct sockaddr SA;
 /* $end sockaddrdef */
@@ -63,4 +64,9 @@ int Select(int  n, fd_set *readfds, fd_set *writefds,
 	   fd_set *exceptfds, struct timeval *timeout) ;
 
 void app_error(char *msg) /* application error */;
+ssize_t rio_writen(int fd, void *usrbuf, size_t n) ;
+void Rio_writen(int fd, void *usrbuf, size_t n);
+int Open(const char *pathname, int flags, mode_t mode);
+void *Mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset);
+void Munmap(void *start, size_t length) ;
 #endif

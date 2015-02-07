@@ -22,11 +22,60 @@
 #include <stdio.h>
 #include "fdbuf.h"
   
+
+
+int main(int argc, char const *argv[])
+{
+  struct stat sbuf;
+  char filename[100]="test/test2.c";
+  if (stat(filename, &sbuf) < 0) {
+    printf("filne not exist\n");
+  }
+  if (!(S_ISREG(sbuf.st_mode)) 
+    || !(S_IRUSR & sbuf.st_mode)) {
+    printf("no read permission\n");
+  }
+
+  return 0;
+}
+
 void test_time();  
+char *get_time_str(char *time_buf);
+int time_test(){
+  char tb[1000];
+  printf("%s\n",get_time_str(tb));
+  return 1;
+
+}
+
+char *get_time_str(char *time_buf)
+{
+    time_t    now_sec;
+    struct tm    *time_now;
+    if(    time(&now_sec) == -1)
+    {
+        perror("time() in get_time.c");
+        return NULL;
+    }
+    if((time_now = gmtime(&now_sec)) == NULL)
+    {
+        perror("localtime in get_time.c");
+        return NULL;
+    }
+    char *str_ptr = NULL;
+    if((str_ptr = asctime(time_now)) == NULL)
+    {
+        perror("asctime in get_time.c");
+        return NULL;
+    }
+    strcat(time_buf, str_ptr);
+    return time_buf;
+}
 
 
 
-int main()
+
+int test_sscanf()
 {
   char buf[100]="GET / HTTP/1.1\r\n";
   char buf2[100]="Connection: keep-alive\r\n";
@@ -46,6 +95,7 @@ int main()
   if (strcasecmp(method, "GET")) {
       return -1;
   }
+  return 0;
 }
 
 

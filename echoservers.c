@@ -32,12 +32,24 @@ typedef struct { /* a pool of connected descriptors */
 void init_pool(int listenfd, pool *p);
 void add_client(int connfd, pool *p);
 void check_clients(pool *p);
-
+void serveHG(int fd,char* method, char* path);
 
 // int full_flag=0;
 
 #define FILENAMELENGTH 303
 
+
+void serveHG(int fd,char* method, char* path){
+  struct stat sbuf;
+  if (stat(path, &sbuf) < 0) {
+    LogWrite(SORRY, "404", "FILE NOT FOUND", fd);
+  }
+  if (!(S_ISREG(sbuf.st_mode)) 
+    || !(S_IRUSR & sbuf.st_mode)) {
+    LogWrite(SORRY, "404", "FILE NOT FOUND", fd);
+  }
+  serve_static(fd, path, sbuf.st_size);
+}
 
 void read_requesthdrs(time_fd *tf,int* conn,int *length) 
 {// need to check connection header
@@ -242,6 +254,7 @@ void check_clients(pool *p)
               // here process post
             }                             
           } else{ //method here is either GET or HEAD
+            serveHG(tf.fd,method,path);
             //process HEAD
             // if it is GET then send also the file
           }  
