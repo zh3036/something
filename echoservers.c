@@ -94,7 +94,7 @@ int main(int argc, char **argv)
   static pool pool; 
   printf("%d\n", FD_SETSIZE);
 
-
+  signal( SIGPIPE, SIG_IGN );
   port=1234;
   //printf("we have %d args\n",argc);
   port=port+argc;
