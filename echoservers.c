@@ -268,6 +268,11 @@ void check_clients(pool *p)
           }  
         }  
       }  
+      if(elap_time(&tf)>3){
+        Close(bufdestroy(&tf));
+        FD_CLR(connfd, &p->read_set);
+        p->clientfd[i].fd=-1;
+      }
       //in post mode, need to read the data
       if(tf.p_flag==1){
         int tem;

@@ -2,6 +2,7 @@
 
 // caculate the time passed since the object is inied
 int elap_time(time_fd* tf){
+  gettimeofday(&(tf->tms), NULL);
   return tf->tms.tv_sec-tf->ini_time;
 }
 
