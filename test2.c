@@ -56,7 +56,11 @@ int main(int argc, char const *argv[])
   }
   // int a = sbuf.st_mtime;
   tm =localtime(&sbuf.st_mtime);
-  printf("%s\n", asctime(tm));
+  char * lm=asctime(tm);
+  char* i = strstr(lm,"\n");
+  *i=0;
+  printf("%s\n", lm);
+  printf("test\n");
   return 0;
 }
 
