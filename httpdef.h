@@ -8,4 +8,4 @@
 #include "log.h"
 
 void get_filetype(char *filename, char *filetype) ;
-void serve_static(int fd, char *filename, int filesize);
+void serve_static(int fd, char *filename, int filesize,char* method);

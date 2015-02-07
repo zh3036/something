@@ -1,7 +1,8 @@
 /* 
  *
  * Zihan Zhou Project 1 checkpoint 2
- * asd
+ * some functions are from the tiny.c sever
+ fromm csapp book
  * asd
  */
 /* $begin echoserversmain */
@@ -48,7 +49,7 @@ void serveHG(int fd,char* method, char* path){
     || !(S_IRUSR & sbuf.st_mode)) {
     LogWrite(SORRY, "404", "FILE NOT FOUND", fd);
   }
-  serve_static(fd, path, sbuf.st_size);
+  serve_static(fd, path, sbuf.st_size,method);
 }
 
 void read_requesthdrs(time_fd *tf,int* conn,int *length) 
@@ -214,6 +215,7 @@ void check_clients(pool *p)
   memset(buf, '0', MAXLINE);
 
 
+
   for (i = 0; (i <= p->maxi) && (p->nready > 0); i++) {
     tf=p->clientfd[i];
     connfd = tf.fd;
@@ -254,7 +256,10 @@ void check_clients(pool *p)
               // here process post
             }                             
           } else{ //method here is either GET or HEAD
-            serveHG(tf.fd,method,path);
+            if(path[0]=='/') 
+              serveHG(tf.fd,method,"index.html");
+            else
+              serveHG(tf.fd,method,path);
             //process HEAD
             // if it is GET then send also the file
           }  
@@ -286,8 +291,8 @@ void check_clients(pool *p)
         //    1. length required 411 ***
         //    2. receive the rest body but do nothing ***
 
-        // 3. for HEAD and GET , we get the path
-        //  b. HEAD : then generate headers send back
+        // 3. for HEAD and GET , we get the path***
+        //  b. HEAD : then generate headers send back 
         //      1.Connection
         //      2.Date
         //      3. Server : Liso/1.0
