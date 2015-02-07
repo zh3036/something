@@ -31,38 +31,5 @@
 #define    SERVER                "Server:Mutu(0.1 Alpha)/Linux"
 
 
-/* if the connect protocol is http then this function deal with it */
-int http_session(int *connect_fd, struct sockaddr_in *client_addr);
-
-/* if http protocol return 1, else return 0 */
-int is_http_protocol(char *msg_from_client);
-
-/* get the request header's uri */
-char *get_uri(char *req_header, char *uri_buf);
-
-
-/* get the uri status,access return 0, not exist return 1, permission deny return 2, error return -1 */
-int get_uri_status(char *uri);
-
-
-/* get the mime type of the file request in uri from client's browse */
-char *get_mime_type(char *uri);
-
-/* read the file which requested by client in uri ,and store in entity_buf.
-   success return bytes readed,error return -1 
-*/
-int get_file_disk(char *uri, unsigned char *entity_buf);
-
-/* set http replay header's status:
-    200:ok
-    404:file not found
-
-*/
-int set_rep_status();
-
-int set_error_information(unsigned char *send_buf, int errorno);
-
-
-int reply_normal_information(unsigned char *send_buf, unsigned char *file_buf, int file_size, char *mime_type);
-
+char *get_time_str(char *time_buf);
 #endif

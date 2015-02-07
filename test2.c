@@ -22,11 +22,30 @@
 #include <stdio.h>
 #include "fdbuf.h"
   
+void test_time();  
+char *get_time_str(char *time_buf);
 
 
+int time_test(){
+  char tb[1000];
+  get_time_str(tb);
+  printf("%s\n",tb);
+  return 1;
+
+}
+int main2(int argc, char const *argv[])
+{
+  /* code */
+  char tb[1000];
+  get_time_str(tb);
+  printf("%s\n",tb);
+  return 1;
+  return 0;
+}
 int main(int argc, char const *argv[])
 {
   struct stat sbuf;
+  struct tm *tm;
   char filename[100]="test/test2.c";
   if (stat(filename, &sbuf) < 0) {
     printf("filne not exist\n");
@@ -35,18 +54,12 @@ int main(int argc, char const *argv[])
     || !(S_IRUSR & sbuf.st_mode)) {
     printf("no read permission\n");
   }
-
+  // int a = sbuf.st_mtime;
+  tm =localtime(&sbuf.st_mtime);
+  printf("%s\n", asctime(tm));
   return 0;
 }
 
-void test_time();  
-char *get_time_str(char *time_buf);
-int time_test(){
-  char tb[1000];
-  printf("%s\n",get_time_str(tb));
-  return 1;
-
-}
 
 char *get_time_str(char *time_buf)
 {

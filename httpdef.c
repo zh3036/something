@@ -20,16 +20,24 @@ void get_filetype(char *filename, char *filetype)
 }  
 
 
-void serve_static(int fd, char *filename, int filesize, char* method) 
+void serve_static(int fd, char *filename, struct stat *sbuf, char* method) 
 {
   int srcfd;
   char *srcp, filetype[MAXLINE], buf[MAXBUF];
+  char date[MAXBUF];
+  struct tm *tm;
+  get_time_str(date);
+  int filesize=sbuf->st_size;
+  tm =localtime(&(sbuf->st_mtime));
 
   /* Send response headers to client */
   get_filetype(filename, filetype);
   sprintf(buf, "HTTP/1.0 200 OK\r\n");
+  sprintf(buf, "%sDate: %s\r\n",buf,date);
+  sprintf(buf, "%sConnection: Keep-Alive\r\n",buf);
   sprintf(buf, "%sServer: Liso/1.0\r\n", buf);
   sprintf(buf, "%sContent-length: %d\r\n", buf, filesize);
+  sprintf(buf, "%sLast-Modified: %s\r\n",buf,asctime(tm));
   sprintf(buf, "%sContent-type: %s\r\n\r\n", buf, filetype);
   Rio_writen(fd, buf, strlen(buf));
 

@@ -50,7 +50,8 @@ void serveHG(int fd,char* method, char* path){
     || !(S_IRUSR & sbuf.st_mode)) {
     LogWrite(SORRY, "404", "FILE NOT FOUND", fd);
   }
-  serve_static(fd, path, sbuf.st_size,method);
+  serve_static(fd, path, &sbuf,method);
+  // serve_static(fd, path, sbuf.st_size,method);
 }
 
 void read_requesthdrs(time_fd *tf,int* conn,int *length) 
@@ -295,8 +296,8 @@ void check_clients(pool *p)
 
         // 3. for HEAD and GET , we get the path***
         //  b. HEAD : then generate headers send back 
-        //      1.Connection
-        //      2.Date
+        //      1.Connection****
+        //      2.Date****
         //      6. last modified
         //      3. Server : Liso/1.0 ***
         //      4. content-length ****
