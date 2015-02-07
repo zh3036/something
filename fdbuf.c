@@ -77,6 +77,28 @@ int bufread(time_fd* src_tf, char* dst_buf  ,size_t n){
   return toread;
 }
 
+int bufreadline(time_fd* src_tf,char* dst_buf ,size_t maxlen){
+
+  int n, rc;
+  char c, *bufp = (char *)dst_buf;
+
+  for (n = 1; n < (int)maxlen; n++) { 
+    if ((rc = bufread(src_tf, &c, 1)) == 1) {
+      *bufp++ = c;
+      if (c == '\n')
+        break;
+      } else if (rc == 0) {
+        if (n == 1)
+          return 0; /* EOF, no data read */
+        else
+          break;    /* EOF, some data was read */
+      } else
+        return -1;    /* error */
+  }
+  *bufp = 0;
+  return n;
+}
+
 int isfinish_bufload(time_fd* tf){
   if (strstr(tf->tail_buf->buffer,"\r\n\r\n"))
     return 1;

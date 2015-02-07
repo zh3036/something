@@ -176,11 +176,23 @@ void check_clients(pool *p)
     /* If the descriptor is ready, echo a text line from it */
     if ((connfd > 0) && (FD_ISSET(connfd, &p->ready_set))) { 
       p->nready--;
-      for(j=0;(j<5) && isfinish_bufload(&tf);j++){
+      for(j=0;j<5 && isfinish_bufload(&tf);j++){
         bufload(&tf, MAXBUF);
       }
       if(isfinish_bufload(&tf)){
         // start processing
+
+        // 1. read the request line
+        // 2. parse the request line to get method
+        //  a. POST : then just send 200 back
+        //  b. HEAD : then generate headers send back
+        //  c. GET : use HEAD's headers' and with filecontent   
+        // 3. 
+        n=1;
+        buf[MAXLINE-1]='0';
+        tem=1;
+
+        //end processing
         bufdestroy(&tf);
         FD_CLR(connfd, &p->read_set);
         p->clientfd[i].fd=-1;

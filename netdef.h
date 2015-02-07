@@ -16,8 +16,6 @@
 #include <sys/mman.h>
 #include <errno.h>
 #include <math.h>
-#include <pthread.h>
-#include <semaphore.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
