@@ -30,7 +30,7 @@ void serve_static(int fd, char *filename, struct stat *sbuf, char* method)
   tm =localtime(&(sbuf->st_mtime));
   get_time_str(date);
   lm=asctime(tm);
-  char* i = strstr(lm,"\n")
+  char* i = strstr(lm,"\n");
   *i=0;
   i=strstr(date,"\n");
   *i=0;
