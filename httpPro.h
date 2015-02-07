@@ -11,7 +11,7 @@
 
 #define RECV_BUFFER_SIZE    1024        /* 1KB of receive buffer */
 #define    SEND_BUFFER_SIZE    1050000        /* 1.xMB of send buffer */
-#define    URI_SIZE            128            /* length of uri request from client browse */
+#define    URI_SIZE            256            /* length of uri request from client browse */
 
 #define TIME_OUT_SEC        10            /* select timeout of secend */
 #define TIME_OUT_USEC        0            /* select timeout of usecend */

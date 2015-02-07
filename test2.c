@@ -23,9 +23,33 @@
 #include "fdbuf.h"
   
 void test_time();  
+
+
+
 int main()
 {
-  /* code */
+  char buf[100]="GET / HTTP/1.1\r\n";
+  char buf2[100]="Connection: keep-alive\r\n";
+  char buf3[100]="Content-Length: 1446\r\n";
+  char method[50],uri[50],version[50];
+  char left[100],right[100];
+  char left2[100],right2[100];
+  sscanf(buf, "%s %s %s", method, uri, version);
+  printf("%s\n", method);
+  printf("%s\n", uri);
+  printf("%s\n", version);
+  sscanf(buf2, "%s %s", left,right);
+  sscanf(buf3, "%s %s", left2, right2);
+  printf("%s x %s\n%s x %s\n",left,right,left2,right2 );
+  if(strncasecmp(left, "connection:",11 )==0) printf("connect is right\n");
+
+  if (strcasecmp(method, "GET")) {
+      return -1;
+  }
+}
+
+
+int test_strstr(){
   char a[100]="abcdf\r\n\r";
   char *b = strchr(a, 'b');
   printf("%s\n", b);
@@ -34,8 +58,6 @@ int main()
 
   return 0;
 }
-
-
 
 
 int file_test(void)

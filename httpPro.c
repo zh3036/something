@@ -45,6 +45,7 @@ char *get_time_str(char *time_buf)
     strcat(time_buf, str_ptr);
     return time_buf;
 }
+
 int http_session(int *connect_fd, struct sockaddr_in *client_addr)
 {
     char recv_buf[RECV_BUFFER_SIZE + 1];            /* server socket receive buffer */

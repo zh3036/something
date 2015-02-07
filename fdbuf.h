@@ -21,6 +21,8 @@ typedef struct {
   fd_buf* tail_buf;
   fd_buf* header_buf;
   size_t cnt;//total num of content in buf
+  char p_flag;
+  int pcnt;
 } time_fd;
 
 int elap_time(time_fd* tf);

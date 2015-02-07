@@ -18,6 +18,8 @@ fd_buf* ini_buf(){
 void ini_fd(time_fd* tf, int fd){
   tf->fd=fd;
   tf->cnt=0;
+  tf->p_flag=0;
+  tf->pcnt=-1;
   tf->ini_time=tf->tms.tv_sec;
   tf->tail_buf = ini_buf();
   tf->header_buf= tf->tail_buf;
@@ -61,9 +63,9 @@ int bufread(time_fd* src_tf, char* dst_buf  ,size_t n){
   if(toread==0){//if current buffer is empty,remove it
     fd_buf* bf=src_tf->header_buf;
     src_tf->header_buf=src_tf->header_buf->next;
-    free(bf);
-    toread=src_tf->header_buf->bufptr_end-
-           src_tf->header_buf->bufptr_start;
+    free(bf); 
+    toread= src_tf->header_buf->bufptr_end-
+            src_tf->header_buf->bufptr_start;
   } 
   if(n<toread) toread=n;
 
@@ -100,18 +102,19 @@ int bufreadline(time_fd* src_tf,char* dst_buf ,size_t maxlen){
 }
 
 int isfinish_bufload(time_fd* tf){
-  if (strstr(tf->tail_buf->buffer,"\r\n\r\n"))
+  if (strstr(tf->tail_buf->bufptr_start,"\r\n\r\n"))
     return 1;
   return 0;
 }
 
 int bufdestroy(time_fd* tf){ 
+  int fd=tf->fd;
   while(tf->header_buf!=NULL){
     fd_buf* bf=tf->header_buf;
     tf->header_buf=tf->header_buf->next;
     free(bf);
-  }
-  return close(tf->fd);
+  } 
+  return fd;
 }
 
 

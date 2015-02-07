@@ -36,7 +36,34 @@ void check_clients(pool *p);
 
 // int full_flag=0;
 
-#define FILENAMELENGTH 100
+#define FILENAMELENGTH 303
+
+
+void read_requesthdrs(time_fd *tf,int* conn,int *length) 
+{// need to check connection header
+  // content length header 
+  //
+  char buf[MAXLINE];
+  char left[MAXLINE];
+  char right[MAXLINE];
+  do{
+    bufreadline(tf, buf, MAXLINE);
+    sscanf(buf, "%s %s",left,right);
+    if(strncasecmp("connection:", left,11)==0){
+      if(strncasecmp("close", right, 5)==0){
+        *conn=0;
+      }
+      ;
+    }
+    if(strncasecmp("content-length:",left,14)==0){
+      *length=atoi(right);
+    }
+    LogWrite(LOG, "headers:", buf, tf->fd);
+  } while(strcmp(buf, "\r\n"));
+  return;
+}
+
+
 
 int main(int argc, char **argv)
 {
@@ -102,7 +129,7 @@ int main(int argc, char **argv)
         if(connfd<FD_SETSIZE)
           add_client(connfd, &pool);
         else{
-          LogWrite(SORRY, "no more spare fd", "502", connfd);
+          LogWrite(SORRY, "503", "Service Unavailable", connfd);
           close(connfd);
         }
      }
@@ -153,8 +180,8 @@ void add_client(int connfd, pool *p)
       //this need to further coding
       //modify logwrite to acutlly send the error header
       // need to close the connection
-     LogWrite(SORRY, "404", 
-      "File Not Found", connfd);
+     LogWrite(SORRY, "503", 
+      "Service Unavailable", connfd);
      close(connfd);
    }
  }
@@ -165,10 +192,15 @@ void add_client(int connfd, pool *p)
 /* $begin check_clients */
 void check_clients(pool *p) 
 {
-  int i, connfd, n,j;
+  int i, connfd,j;
   time_fd tf;
   char buf[MAXLINE]; 
-  int tem;
+  // int tem;
+  char method[FILENAMELENGTH], path[FILENAMELENGTH];
+  char version[FILENAMELENGTH];
+  char *v;
+
+
 
   for (i = 0; (i <= p->maxi) && (p->nready > 0); i++) {
     tf=p->clientfd[i];
@@ -176,45 +208,88 @@ void check_clients(pool *p)
     /* If the descriptor is ready, echo a text line from it */
     if ((connfd > 0) && (FD_ISSET(connfd, &p->ready_set))) { 
       p->nready--;
+      
       for(j=0;j<5 && isfinish_bufload(&tf);j++){
         bufload(&tf, MAXBUF);
       }
-      if(isfinish_bufload(&tf)){
-        // start processing
 
-        // 1. read the request line
-        // 2. parse the request line to get method
-        //  a. POST : then just send 200 back
-        //  b. HEAD : then generate headers send back
-        //  c. GET : use HEAD's headers' and with filecontent   
-        // 3. 
-        n=1;
-        buf[MAXLINE-1]='0';
-        tem=1;
-
-        //end processing
-        bufdestroy(&tf);
-        FD_CLR(connfd, &p->read_set);
-        p->clientfd[i].fd=-1;
+      if(isfinish_bufload(&tf) && tf.p_flag !=1){  
+        //not in post mode, deal with a new request
+        bufreadline(&tf, buf, MAXLINE-1);
+        sscanf(buf, "%s %s %s", method, path, version);
+        v = strstr(version, "HTTP/1.1");
+        if (v == NULL){ //check for the version 
+          LogWrite(SORRY,"505","HTTP VERSION NOT SUPPORTED", tf.fd);
+        } else if (!(strstr(method,"GET") || //check for method
+                           strstr(method,"POST") ||
+                           strstr(method, "HEAD"))){
+          LogWrite(SORRY, "501", "Not Implemented", tf.fd);
+        } else {// now the version is right, method is right
+          int con_len=-1,is_conn=1;
+          //let us parse the header to get the content length 
+          // and whether should we close the connection
+          read_requesthdrs(&tf, &is_conn, &con_len); 
+          if(!is_conn) {
+            Close(bufdestroy(&tf));
+            FD_CLR(connfd, &p->read_set);
+            p->clientfd[i].fd=-1;
+          } else if(method[0]=='P'){// if it is post method
+            if(con_len==-1){ // if there are no length content
+              LogWrite(SORRY, "411", "Length Required", tf.fd);
+            } else {
+              tf.p_flag=1;
+              tf.pcnt=con_len;
+              // here process post
+            }                             
+          } else{ //method here is either GET or HEAD
+            //process HEAD
+            // if it is GET then send also the file
+          }  
+        }  
+      }  
+      //in post mode, need to read the data
+      if(tf.p_flag==1){
+        int tem;
+        char post_buf[MAXBUF];
+        for(int k=0;k<5 && tf.pcnt>0;k++){
+          tem=bufread(&tf, post_buf, tf.pcnt);
+          tf.pcnt-=tem;
+        }
+        if(tf.pcnt<=0) tf.p_flag=0;
       }
-
-
-      // tem=0;
-      // if ((n = recv(connfd, buf, MAXLINE,0)) >1) {
-      //   // LogWrite(LOG, "server received", "success", connfd);
-      //   while(n>0){
-      //     tem=send(connfd, buf+tem, n-tem,0); 
-      //     n=n-tem;
-      //   } 
-      // }
-      // /* EOF detected, remove descriptor from pool */
-      // else { 
-      //   Close(connfd);
-      //   FD_CLR(connfd, &p->read_set); 
-      //   p->clientfd[i].fd = -1;
-      // }
     }
   }
+
+        // start processing
+
+        // 1. read the request line  ***
+        //  a. if it not HTTP/1.1   ****
+        //      505_HTTP_VERSION_NOT_SUPPORTED ***
+        // 2. parse the request line to get method
+        //  a. POST : then just send 200 back
+        //    1. length required 411
+        //    2. receive the rest body but do nothing
+        //  b. HEAD : then generate headers send back
+        //  c. GET : use HEAD's headers' and with filecontent   
+        //  d. other: not implement 501
+        // 3. for HEAD and GET , we get the path
+        //  a. cgi --> not implemente
+        //  b. find the path, if not exist->404
+        //  c. if exist, make the reply headers
+        //  d. send the headers, send the body
+        //  e. if in the header comming in there are connection closed
+        //     then close the connfd
+         // end processing
+        // the code for closing and destory a tf
+        // bufdestroy(&tf);
+        // FD_CLR(connfd, &p->read_set);
+        // p->clientfd[i].fd=-1;
+
+
+
+  
 }
+
+
 /* $end check_clients */
 
