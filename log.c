@@ -19,7 +19,7 @@ void LogWrite( int type, char *s1, char *s2, int num)
     case SORRY: 
 
       sprintf(logbuffer, \
-        "HTTP/1.1 %s %s\r\n\r\n\r\n",s1 ,s2);
+        "HTTP/1.1 %s %s\r\n\r\n",s1 ,s2);
       write(num,logbuffer,strlen(logbuffer));
       sprintf(logbuffer,"SORRY: %s:%s:in fd %d",s1,s2,num); 
       break;
