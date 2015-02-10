@@ -9,6 +9,7 @@
 #include <setjmp.h>
 #include <signal.h>
 #include <sys/time.h>
+#include <time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
