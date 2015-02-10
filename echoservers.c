@@ -235,7 +235,16 @@ void check_clients(Pool *p)
             // if(strcmp(path,"/")==0) 
             //   serveHG(&tf,method,"index.html");
             if(path[strlen(path)-1]=='/')
-              serveHG(&tf,method,"index.html");
+            {
+              if(strlen(path)==1)
+                serveHG(&tf,method,"index.html");
+              else
+              {
+                strcat(path, "index.html");
+                serveHG(&tf, method, path+1);
+              }
+
+            }
             else
               serveHG(&tf,method,path+1);
             //process HEAD
