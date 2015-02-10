@@ -98,7 +98,10 @@ int main(int argc, char **argv)
     //as FD_SETSIZE, you cannot put that descriptor into 
     // an fd_set.
 
-  	pool.nready = Select(pool.maxfd+1, &pool.ready_set, NULL, NULL, NULL);
+    struct timeval timeout;
+    timeout.tv_sec=3;
+
+  	pool.nready = Select(pool.maxfd+1, &pool.ready_set, NULL, NULL, &timeout);
 
   	/* If listening descriptor ready, add new client to pool */
     
