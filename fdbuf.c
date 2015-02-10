@@ -2,7 +2,6 @@
 
 // caculate the time passed since the object is inied
 int elap_time(time_fd* tf){
-  gettimeofday(&(tf->tms), NULL);
   return tf->tms.tv_sec-tf->ini_time;
 }
 
@@ -59,8 +58,8 @@ int bufload(time_fd* tf,size_t n){
 
 int bufread(time_fd* src_tf, char* dst_buf  ,size_t n){
   //how many left for the current buffer
-  size_t toread=src_tf->header_buf->bufptr_end-
-              src_tf->header_buf->bufptr_start;
+  size_t toread = src_tf->header_buf->bufptr_end - 
+                    src_tf->header_buf->bufptr_start;
   if(toread==0){//if current buffer is empty,remove it
     fd_buf* bf=src_tf->header_buf;
     src_tf->header_buf=src_tf->header_buf->next;
@@ -103,7 +102,7 @@ int bufreadline(time_fd* src_tf,char* dst_buf ,size_t maxlen){
 }
 
 int isfinish_bufload(time_fd* tf){
-  if (strstr(tf->tail_buf->bufptr_start,"\r\n\r\n"))
+  if (tf->tail_buf && strstr(tf->tail_buf->bufptr_start,"\r\n\r\n"))
     return 1;
   return 0;
 }

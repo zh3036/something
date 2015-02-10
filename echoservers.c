@@ -12,9 +12,7 @@
 // #include "httpPro.h"
 // #include "netdef.h"
 #include "fdbuf.h"
-#include "log.h"
 #include "netdef.h"
-#include "httpPro.h"
 #include "httpdef.h"
 
 // the struct to keep buffer to resume reading
@@ -22,12 +20,12 @@
 
 
 typedef struct { /* a pool of connected descriptors */ 
-    int maxfd;        /* largest descriptor in read_set */   
-    fd_set read_set;  /* set of all active descriptors */
-    fd_set ready_set; /* subset of descriptors ready for reading  */
-    int nready;       /* number of ready descriptors from select */   
-    int maxi;         /* highest index into client array */
-    time_fd clientfd[FD_SETSIZE];    /* set of active descriptors */
+  int maxfd;        /* largest descriptor in read_set */   
+  fd_set read_set;  /* set of all active descriptors */
+  fd_set ready_set; /* subset of descriptors ready for reading  */
+  int nready;       /* number of ready descriptors from select */   
+  int maxi;         /* highest index into client array */
+  time_fd clientfd[FD_SETSIZE];    /* set of active descriptors */
 } pool; 
 
 void init_pool(int listenfd, pool *p);
@@ -38,6 +36,10 @@ void serveHG(int fd,char* method, char* path);
 // int full_flag=0;
 
 #define FILENAMELENGTH 303
+#define LOADTIME 5
+
+
+
 
 
 void serveHG(int fd,char* method, char* path){
@@ -120,7 +122,7 @@ int main(int argc, char **argv)
     //   exit(0);
     // }
     logfilename = LogFile;
-    LogWrite(LOG, "prove", "can write", -1);
+    LogWrite(LOG, "prove", "canWrite", -1);
     // logfile need writable
     // www folder need be readable 
     // cgiscript need be runnable
@@ -226,8 +228,15 @@ void check_clients(pool *p)
     if ((connfd > 0) && (FD_ISSET(connfd, &p->ready_set))) { 
       p->nready--;
       
-      for(j=0;j<5 && !isfinish_bufload(&tf);j++){
-        bufload(&tf, MAXBUF);
+      for(j=0;j<LOADTIME && !isfinish_bufload(&tf);j++)
+      {
+        if(bufload(&tf, MAXBUF)==-1)
+        {
+          Close(bufdestroy(&tf));
+          FD_CLR(connfd, &p->read_set);
+          p->clientfd[i].fd=-1;     
+          break; 
+        }
       }
 
       if(isfinish_bufload(&tf) && tf.p_flag !=1){  
@@ -268,11 +277,11 @@ void check_clients(pool *p)
           }  
         }  
       }  
-      if(elap_time(&tf)>3){
-        Close(bufdestroy(&tf));
-        FD_CLR(connfd, &p->read_set);
-        p->clientfd[i].fd=-1;
-      }
+      // if(elap_time(&tf)>3){
+      //   Close(bufdestroy(&tf));
+      //   FD_CLR(connfd, &p->read_set);
+      //   p->clientfd[i].fd=-1;
+      // }
       //in post mode, need to read the data
       if(tf.p_flag==1){
         int tem;

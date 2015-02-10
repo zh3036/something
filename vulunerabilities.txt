@@ -1,43 +1,20 @@
+
+
+
 1. it handles small msg not well, when using the given checker for less than 3 bytes, it does not 
 always send back the right string.
 
 2. what is the point to timeout the select?
 
 3. since we do not block and give a timeout to each send and recv we need to keep track that
-whether this fd is for writing or reading right? However, since we can choose to write and not really block, we do not need to really timeout write?
-
-
-do not keep the buffer forever
+whether this fd is for writing or reading right? However, since we can choose toWrite and not really block, we do not need to really timeoutWrite?
 
 
 
 
+----------checkpt2
 
+1. persistency
+2. send headers with error code response and [a body]
+3. deal withWrite error
 
-implement for buffer read
-
-So first a global list 
-size is the maxim num of fd
-so by calling A[fd] we can find that place
-each place it is struct of buffer
-
-this buffer is a link list, with a ptr to specify 
-current read position, and unread byte num
-
-
-
-
-
-NEED TO LEAVE ONE FD FOR SENDING BACK THAT THE FD IS FULL
-
-
-i need a function only for making headers
-and rest for body
-
-i need a function to send error code
-
-
-i need to implement last-modified
-
-
-need to change eveyr print and error to log

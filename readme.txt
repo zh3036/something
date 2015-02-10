@@ -21,7 +21,7 @@ for every while loop
 
 3.2 if some normal ports is ready, then it means clients
   sent msgs, so go through the ready clients
-  recv the msg and write back
+  recv the msg andWrite back
   using normal IO does not care about short count
 
 
