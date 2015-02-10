@@ -232,7 +232,9 @@ void check_clients(Pool *p)
               // here process post
             }                             
           } else{ //method here is either GET or HEAD
-            if(strcmp(path,"/")==0) 
+            // if(strcmp(path,"/")==0) 
+            //   serveHG(&tf,method,"index.html");
+            if(path[strlen(path)-1]=='/')
               serveHG(&tf,method,"index.html");
             else
               serveHG(&tf,method,path+1);
@@ -311,7 +313,7 @@ void LogWriteHandle(int type, char *s1, char *s2, time_fd* tf){
 }
 
 
-void serveHG(time_fd *tf,char* method, char* path){
+void serveHG2(time_fd *tf,char* method, char* path){
   int ret;
   struct stat sbuf;
   stat(path, &sbuf);
@@ -329,7 +331,7 @@ void serveHG(time_fd *tf,char* method, char* path){
   }
 }
 
-void serveHG2(time_fd *tf,char* method, char* path){
+void serveHG(time_fd *tf,char* method, char* path){
   struct stat sbuf;
   int ret;
   LogWrite(LOG, method, path, tf->fd);

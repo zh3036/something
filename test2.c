@@ -33,6 +33,12 @@ int main()
   sprintf(logbuffer, "\r\n\r\n");
   int i = strlen(logbuffer);
   printf("%d\n", i);
+  char log2buffer[100];
+  sprintf(log2buffer,"image/pnf/");
+  // log2buffer=;
+  if(log2buffer[strlen(log2buffer)-1]=='/')
+    printf("yes!\n");
+  printf("%c\n", log2buffer[strlen(log2buffer)-1]);
   return 1;
 }
 int time_test(){
