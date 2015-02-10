@@ -58,10 +58,10 @@ int serve_static(int fd, char *filename, struct stat *sbuf, char* method)
   struct tm *tm;
   int filesize=sbuf->st_size;
   tm =localtime(&(sbuf->st_mtime));
-  get_time_str(date);
   lm=asctime(tm);
   char* i = strstr(lm,"\n");
   *i=0;
+  get_time_str(date);
   i=strstr(date,"\n");
   *i=0;
   

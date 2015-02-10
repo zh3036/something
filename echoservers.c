@@ -312,6 +312,7 @@ void LogWriteHandle(int type, char *s1, char *s2, time_fd* tf){
 
 void serveHG(time_fd *tf,char* method, char* path){
   struct stat sbuf;
+  int ret;
   LogWrite(LOG, method, path, tf->fd);
   if (stat(path, &sbuf) < 0) {
     LogWriteHandle(SORRY, "404", "FILE NOT FOUND", tf);
@@ -320,8 +321,13 @@ void serveHG(time_fd *tf,char* method, char* path){
     || !(S_IRUSR & sbuf.st_mode)) {
     LogWriteHandle(SORRY, "404", "FILE NOT FOUND", tf);
   }
-  serve_static(tf->fd, path, &sbuf,method);
-  // serve_static(fd, path, sbuf.st_size,method);
+  ret=serve_static(tf->fd, path, &sbuf,method);
+  if(ret==-1)
+  {
+    Close(bufdestroy(tf));
+    FD_CLR(tf->fd, &pool.read_set);
+    tf->fd=-1;
+  }
 }
 
 void read_requesthdrs(time_fd *tf,int* conn,int *length) 
@@ -338,7 +344,6 @@ void read_requesthdrs(time_fd *tf,int* conn,int *length)
       if(strncasecmp("close", right, 5)==0){
         *conn=0;
       }
-      ;
     }
     if(strncasecmp("content-length:",left,14)==0){
       *length=atoi(right);
