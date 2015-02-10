@@ -57,18 +57,24 @@ int serve_static(int fd, char *filename, struct stat *sbuf, char* method)
   char date[MAXBUF],*lm;
   struct tm *tm;
   int filesize=sbuf->st_size;
+  bzero(buf, MAXBUF);
+  bzero(date, MAXBUF);
+
   tm =localtime(&(sbuf->st_mtime));
+  get_time_str(date);
   lm=asctime(tm);
   char* i = strstr(lm,"\n");
   *i=0;
-  get_time_str(date);
   i=strstr(date,"\n");
   *i=0;
   
   /* Send response headers to client */
   get_filetype(filename, filetype);
+  // printf("before response:\n%s\n", buf);  
   sprintf(buf, "HTTP/1.0 200 OK\r\n");
+  // printf("before date:\n%s\n", buf);
   sprintf(buf, "%sDate: %s\r\n",buf,date);
+  // printf("after date:\n%s\n", buf);
   sprintf(buf, "%sConnection: Keep-Alive\r\n",buf);
   sprintf(buf, "%sServer: Liso/1.0\r\n", buf);
   sprintf(buf, "%sContent-length: %d\r\n", buf, filesize);

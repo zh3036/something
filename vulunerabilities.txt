@@ -15,6 +15,5 @@ whether this fd is for writing or reading right? However, since we can choose to
 ----------checkpt2
 
 1. persistency
-2. send headers with error code response and [a body]
-3. deal withWrite error
+
 

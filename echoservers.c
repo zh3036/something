@@ -316,10 +316,12 @@ void serveHG(time_fd *tf,char* method, char* path){
   LogWrite(LOG, method, path, tf->fd);
   if (stat(path, &sbuf) < 0) {
     LogWriteHandle(SORRY, "404", "FILE NOT FOUND", tf);
+    return;
   }
   if (!(S_ISREG(sbuf.st_mode)) 
     || !(S_IRUSR & sbuf.st_mode)) {
     LogWriteHandle(SORRY, "404", "FILE NOT FOUND", tf);
+    return;
   }
   ret=serve_static(tf->fd, path, &sbuf,method);
   if(ret==-1)

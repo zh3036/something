@@ -21,11 +21,20 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include "fdbuf.h"
+
+
   
 void test_time();  
 char *get_time_str(char *time_buf);
 
-
+int main()
+{
+  char logbuffer[5];
+  sprintf(logbuffer, "\r\n\r\n");
+  int i = strlen(logbuffer);
+  printf("%d\n", i);
+  return 1;
+}
 int time_test(){
   char tb[1000];
   get_time_str(tb);
@@ -42,7 +51,7 @@ int main2(int argc, char const *argv[])
   return 1;
   return 0;
 }
-int main(int argc, char const *argv[])
+int main3(int argc, char const *argv[])
 {
   struct stat sbuf;
   struct tm *tm;
