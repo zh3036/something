@@ -20,6 +20,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "log.h"
 // #include "netdef.h"
 /* $begin sockaddrdef */
 typedef struct sockaddr SA;

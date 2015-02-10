@@ -26,59 +26,21 @@ typedef struct { /* a pool of connected descriptors */
   int nready;       /* number of ready descriptors from select */   
   int maxi;         /* highest index into client array */
   time_fd clientfd[FD_SETSIZE];    /* set of active descriptors */
-} pool; 
+} Pool; 
 
-void init_pool(int listenfd, pool *p);
-void add_client(int connfd, pool *p);
-void check_clients(pool *p);
-void serveHG(int fd,char* method, char* path);
 
+static Pool pool; 
+
+void init_pool(int listenfd, Pool *p);
+void add_client(int connfd, Pool *p);
+void check_clients(Pool *p);
+void serveHG(time_fd *tf,char* method, char* path);
+void read_requesthdrs(time_fd *tf,int* conn,int *length) ;
+void LogWriteHandle(int type, char *s1, char *s2, time_fd *tf);
 // int full_flag=0;
 
 #define FILENAMELENGTH 303
 #define LOADTIME 5
-
-
-
-
-
-void serveHG(int fd,char* method, char* path){
-  struct stat sbuf;
-  LogWrite(LOG, method, path, fd);
-  if (stat(path, &sbuf) < 0) {
-    LogWrite(SORRY, "404", "FILE NOT FOUND", fd);
-  }
-  if (!(S_ISREG(sbuf.st_mode)) 
-    || !(S_IRUSR & sbuf.st_mode)) {
-    LogWrite(SORRY, "404", "FILE NOT FOUND", fd);
-  }
-  serve_static(fd, path, &sbuf,method);
-  // serve_static(fd, path, sbuf.st_size,method);
-}
-
-void read_requesthdrs(time_fd *tf,int* conn,int *length) 
-{// need to check connection header
-  // content length header 
-  //
-  char buf[MAXLINE];
-  char left[MAXLINE];
-  char right[MAXLINE];
-  do{
-    bufreadline(tf, buf, MAXLINE);
-    sscanf(buf, "%s %s",left,right);
-    if(strncasecmp("connection:", left,11)==0){
-      if(strncasecmp("close", right, 5)==0){
-        *conn=0;
-      }
-      ;
-    }
-    if(strncasecmp("content-length:",left,14)==0){
-      *length=atoi(right);
-    }
-    // LogWrite(LOG, "headers:", buf, tf->fd);
-  } while(strcmp(buf, "\r\n"));
-  return;
-}
 
 
 
@@ -93,7 +55,6 @@ int main(int argc, char **argv)
   
   socklen_t clientlen = sizeof(struct sockaddr_in);
   struct sockaddr_in clientaddr;
-  static pool pool; 
   printf("%d\n", FD_SETSIZE);
 
   signal( SIGPIPE, SIG_IGN );
@@ -160,7 +121,7 @@ int main(int argc, char **argv)
 /* $end echoservers main */
 
 /* $begin init_pool */
-void init_pool(int listenfd, pool *p) 
+void init_pool(int listenfd, Pool *p) 
 {
     /* Initially, there are no connected descriptors */
     int i;
@@ -176,7 +137,7 @@ void init_pool(int listenfd, pool *p)
 /* $end init_pool */
 
 /* $begin add_client */
-void add_client(int connfd, pool *p) 
+void add_client(int connfd, Pool *p) 
 {
     int i;
     p->nready--;
@@ -208,7 +169,7 @@ void add_client(int connfd, pool *p)
 /* $end add_client */
 
 /* $begin check_clients */
-void check_clients(pool *p) 
+void check_clients(Pool *p) 
 {
   int i, connfd,j;
   time_fd tf;
@@ -245,11 +206,11 @@ void check_clients(pool *p)
         sscanf(buf, "%s %s %s", method, path, version);
         v = strstr(version, "HTTP/1.1");
         if (v == NULL){ //check for the version 
-          LogWrite(SORRY,"505","HTTP VERSION NOT SUPPORTED", tf.fd);
+          LogWriteHandle(SORRY,"505","HTTP VERSION NOT SUPPORTED", &tf);
         } else if (!(strstr(method,"GET") || //check for method
                            strstr(method,"POST") ||
                            strstr(method, "HEAD"))){
-          LogWrite(SORRY, "501", "Not Implemented", tf.fd);
+          LogWriteHandle(SORRY, "501", "Not Implemented", &tf);
         } else {// now the version is right, method is right
           int con_len=-1,is_conn=1;
           //let us parse the header to get the content length 
@@ -261,7 +222,7 @@ void check_clients(pool *p)
             p->clientfd[i].fd=-1;
           } else if(method[0]=='P'){// if it is post method
             if(con_len==-1){ // if there are no length content
-              LogWrite(SORRY, "411", "Length Required", tf.fd);
+              LogWriteHandle(SORRY, "411", "Length Required", &tf);
             } else {
               tf.p_flag=1;
               tf.pcnt=con_len;
@@ -269,9 +230,9 @@ void check_clients(pool *p)
             }                             
           } else{ //method here is either GET or HEAD
             if(strcmp(path,"/")==0) 
-              serveHG(tf.fd,method,"index.html");
+              serveHG(&tf,method,"index.html");
             else
-              serveHG(tf.fd,method,path+1);
+              serveHG(&tf,method,path+1);
             //process HEAD
             // if it is GET then send also the file
           }  
@@ -292,7 +253,7 @@ void check_clients(pool *p)
         }
         if(tf.pcnt<=0) {
           tf.p_flag=0;
-          LogWrite(SORRY, "200", "OK", tf.fd);
+          LogWriteHandle(SORRY, "200", "OK", &tf);
         }
       }
     }
@@ -334,6 +295,60 @@ void check_clients(pool *p)
 
   
 }
+
+void LogWriteHandle(int type, char *s1, char *s2, time_fd* tf){
+  int ret;
+  ret = LogWrite(type, s1, s2, tf->fd);
+  if(ret==-1)
+  {
+    Close(bufdestroy(tf));
+    FD_CLR(tf->fd, &pool.read_set);
+    tf->fd=-1;
+  }
+}
+
+
+
+
+void serveHG(time_fd *tf,char* method, char* path){
+  struct stat sbuf;
+  LogWrite(LOG, method, path, tf->fd);
+  if (stat(path, &sbuf) < 0) {
+    LogWriteHandle(SORRY, "404", "FILE NOT FOUND", tf);
+  }
+  if (!(S_ISREG(sbuf.st_mode)) 
+    || !(S_IRUSR & sbuf.st_mode)) {
+    LogWriteHandle(SORRY, "404", "FILE NOT FOUND", tf);
+  }
+  serve_static(tf->fd, path, &sbuf,method);
+  // serve_static(fd, path, sbuf.st_size,method);
+}
+
+void read_requesthdrs(time_fd *tf,int* conn,int *length) 
+{// need to check connection header
+  // content length header 
+  //
+  char buf[MAXLINE];
+  char left[MAXLINE];
+  char right[MAXLINE];
+  do{
+    bufreadline(tf, buf, MAXLINE);
+    sscanf(buf, "%s %s",left,right);
+    if(strncasecmp("connection:", left,11)==0){
+      if(strncasecmp("close", right, 5)==0){
+        *conn=0;
+      }
+      ;
+    }
+    if(strncasecmp("content-length:",left,14)==0){
+      *length=atoi(right);
+    }
+    // LogWriteHandle(LOG, "headers:", buf, tf->fd);
+  } while(strcmp(buf, "\r\n"));
+  return;
+}
+
+
 
 
 /* $end check_clients */

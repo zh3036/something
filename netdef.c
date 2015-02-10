@@ -81,11 +81,12 @@ ssize_t rio_writen(int fd, void *usrbuf, size_t n)
   char *bufp = (char*)usrbuf;
 
   while (nleft > 0) {
-    if ((nwritten =Write(fd, bufp, nleft)) <= 0) {
-if (errno == EINTR)  /* interrupted by sig handler return */
-nwritten = 0;    /* and callWrite() again */
+    if ((nwritten =Write(fd, bufp, nleft)) <= 0) 
+    {
+      if (errno == EINTR)  /* interrupted by sig handler return */
+        nwritten = 0;    /* and callWrite() again */
       else
-return -1;       /* errorno set byWrite() */
+        return -1;       /* errorno set byWrite() */
     }
   nleft -= nwritten;
   bufp += nwritten;
@@ -96,7 +97,7 @@ return n;
 int Rio_writen(int fd, void *usrbuf, size_t n) 
 {
   if ((size_t)rio_writen(fd, usrbuf, n) != n){
-    LogWrite(SORRY, "500", "internet server", fd);
+    LogWrite(ERROR, "500", "internet server", fd);
     return -1;
   }
   return 0;
