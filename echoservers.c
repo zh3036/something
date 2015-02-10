@@ -311,9 +311,25 @@ void LogWriteHandle(int type, char *s1, char *s2, time_fd* tf){
 }
 
 
-
-
 void serveHG(time_fd *tf,char* method, char* path){
+  int ret;
+  struct stat sbuf;
+  stat(path, &sbuf);
+  LogWrite(LOG, method, path, tf->fd);
+  if(access(path, R_OK)==-1) {
+    LogWriteHandle(SORRY, "404", "FILE NOT FOUND", tf);
+    return;
+  }
+  ret=serve_static(tf->fd, path, &sbuf,method);
+  if(ret==-1)
+  {
+    Close(bufdestroy(tf));
+    FD_CLR(tf->fd, &pool.read_set);
+    tf->fd=-1;
+  }
+}
+
+void serveHG2(time_fd *tf,char* method, char* path){
   struct stat sbuf;
   int ret;
   LogWrite(LOG, method, path, tf->fd);
