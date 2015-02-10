@@ -241,12 +241,20 @@ void check_clients(Pool *p)
               else
               {
                 strcat(path, "index.html");
-                serveHG(&tf, method, path+1);
+                if(path[0]=='/')
+                  serveHG(&tf, method, path+1);
+                else
+                  serveHG(&tf, method, path);
               }
 
             }
             else
-              serveHG(&tf,method,path+1);
+            {
+              if(path[0]=='/')
+                serveHG(&tf, method, path+1);
+              else
+                serveHG(&tf, method, path);
+            }
             //process HEAD
             // if it is GET then send also the file
           }  
