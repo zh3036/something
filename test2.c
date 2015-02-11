@@ -26,8 +26,20 @@
   
 void test_time();  
 char *get_time_str(char *time_buf);
+int main(int argc, char const *argv[])
+{
+  char xxx[100];
+  char x[12]="/";
 
-int main()
+  sprintf(xxx, "1234\n");
+  strcat(xxx, x+1);
+  printf("%s\n", xxx);
+  // sprintf(xxx,"%s3e\n",xxx); 
+  // printf("%s\n", xxx);
+  return 0;
+}
+
+int mainx()
 {
   char logbuffer[5];
   sprintf(logbuffer, "\r\n\r\n");

@@ -83,6 +83,7 @@ int main(int argc, char **argv)
     //   exit(0);
     // }
     logfilename = LogFile;
+    wwwfolder=wwwFolder;
     LogWrite(LOG, "prove", "canWrite", -1);
     // logfile need writable
     // www folder need be readable 
@@ -234,28 +235,49 @@ void check_clients(Pool *p)
           } else{ //method here is either GET or HEAD
             // if(strcmp(path,"/")==0) 
             //   serveHG(&tf,method,"index.html");
-            if(path[strlen(path)-1]=='/')
+            char PATH[MAXBUF];
+            bzero(PATH,MAXBUF-1);
+            sprintf(PATH,"%s/",wwwfolder);
+            if (path[0]=='/')
             {
-              if(strlen(path)==1)
-                serveHG(&tf,method,"index.html");
-              else
-              {
-                strcat(path, "index.html");
-                if(path[0]=='/')
-                  serveHG(&tf, method, path+1);
-                else
-                  serveHG(&tf, method, path);
-              }
+              strcat(PATH, path+1);
+            }
+            else 
+            {
+              strcat(PATH, path);
+            }
+            if (PATH[strlen(PATH)-1]=='/')
+            {
+              strcat(PATH, "index.html");
+            }
+            serveHG(&tf,method,PATH);
+            // if(path[strlen(path)-1]=='/')
 
-            }
-            else
-            {
-              if(path[0]=='/')
-                serveHG(&tf, method, path+1);
-              else
-                serveHG(&tf, method, path);
-            }
-            //process HEAD
+            // {
+            //   if(strlen(path)==1)
+            //   {
+            //     sprintf(PATH,"index.html");
+            //     serveHG(&tf,method,PATH);
+            //   }
+            //   else
+            //   {
+            //     strcat(path, "index.html");
+            //     if(path[0]=='/')
+            //       sprintf(PATH, "%s",path+1);
+            //       // serveHG(&tf, method, path+1);
+            //     else
+            //       sprintf(PATH, "%s",path);  
+            //     serveHG(&tf, method, PATH);
+            //   }
+            // }
+            // else
+            // {
+            //   if(path[0]=='/')
+            //     serveHG(&tf, method, path+1);
+            //   else
+            //     serveHG(&tf, method, path);
+            // }
+            // //process HEAD
             // if it is GET then send also the file
           }  
         }  
