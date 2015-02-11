@@ -225,7 +225,7 @@ void check_clients(Pool *p)
             FD_CLR(connfd, &p->read_set);
             p->clientfd[i].fd=-1;
           } else if(method[0]=='P'){// if it is post method
-            if(con_len==-1){ // if there are no length content
+            if(con_len<=-1){ // if there are no length content
               LogWriteHandle(SORRY, "411", "Length Required", &tf);
             } else {
               tf.p_flag=1;
@@ -408,6 +408,14 @@ void read_requesthdrs(time_fd *tf,int* conn,int *length)
       }
     }
     if(strncasecmp("content-length:",left,14)==0){
+      for (int ic = 0; ic < strlen(right); ++ic)
+      { 
+        if(!isdigit(right[ic]))
+        {
+          *length=-1;
+          return;
+        }
+      }
       *length=atoi(right);
     }
     // LogWriteHandle(LOG, "headers:", buf, tf->fd);

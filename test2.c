@@ -29,11 +29,20 @@ char *get_time_str(char *time_buf);
 int main(int argc, char const *argv[])
 {
   char xxx[100];
-  char x[12]="/";
-
+  char x[12]="-231jsd";
+  int i;
   sprintf(xxx, "1234\n");
   strcat(xxx, x+1);
   printf("%s\n", xxx);
+  i=atoi("-12j");
+  printf("%d\n", i);
+  for (int i = 0; i < strlen(x); ++i)
+   {
+     if (!isdigit(x[i]))
+     {
+       printf("invalid char: %c\n", x[i]);
+     }
+   } 
   // sprintf(xxx,"%s3e\n",xxx); 
   // printf("%s\n", xxx);
   return 0;
