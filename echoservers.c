@@ -408,7 +408,7 @@ void read_requesthdrs(time_fd *tf,int* conn,int *length)
       }
     }
     if(strncasecmp("content-length:",left,14)==0){
-      for (int ic = 0; ic < strlen(right); ++ic)
+      for (unsigned long ic = 0; ic < strlen(right); ++ic)
       { 
         if(!isdigit(right[ic]))
         {
