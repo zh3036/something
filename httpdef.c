@@ -13,7 +13,7 @@ void get_filetype(char *filename, char *filetype)
   else if (strstr(filename,".css"))
     strcpy(filetype, "text/css");
   else if (strstr(filename,".png"))
-    strcpy(filetype, "text/png");
+    strcpy(filetype, "image/png");
   else
     strcpy(filetype, "text/plain");
 }  
