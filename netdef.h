@@ -49,6 +49,7 @@ typedef struct sockaddr SA;
 
 char* logfilename;
 char* wwwfolder;
+char* cgi;
 
 int open_listenfd(int port) ;
 
