@@ -4,5 +4,5 @@
 #include "timefd.h"
 #include "netdef.h"
 
-int LogWrite( int type, char *s1, char *s2, int num);
+int LogWrite( int type, char *s1, char *s2, time_fd *fd);
 #endif

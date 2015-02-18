@@ -24,20 +24,20 @@ char *get_time_str(char *time_buf)
     struct tm    *time_now;
     if(    time(&now_sec) == -1)
     {
-        LogWrite(SORRY, "500", "Internal Sever Error", -1);
+        LogWrite(SORRY, "500", "Internal Sever Error", NULL);
         // perror("time() in get_time.c");
         return NULL;
     }
     if((time_now = gmtime(&now_sec)) == NULL)
     {
-        LogWrite(SORRY, "500", "Internal Sever Error", -1);
+        LogWrite(SORRY, "500", "Internal Sever Error", NULL);
         // perror("localtime in get_time.c");
         return NULL;
     }
     char *str_ptr = NULL;
     if((str_ptr = asctime(time_now)) == NULL)
     {
-        LogWrite(SORRY, "500", "Internal Sever Error", -1);
+        LogWrite(SORRY, "500", "Internal Sever Error", NULL);
 
         // perror("asctime in get_time.c");
         return NULL;

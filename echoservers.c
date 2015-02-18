@@ -28,6 +28,7 @@ typedef struct { /* a pool of connected descriptors */
   time_fd clientfd[FD_SETSIZE];    /* set of active descriptors */
 } Pool; 
 
+time_fd tem_tf;
 
 static Pool pool; 
 
@@ -85,7 +86,7 @@ int main(int argc, char **argv)
     logfilename = LogFile;
     wwwfolder=wwwFolder;
     cgi=cgiScript;
-    LogWrite(LOG, "prove", "canWrite", -1);
+    LogWrite(LOG, "prove", "canWrite", NULL);
     // logfile need writable
     // www folder need be readable 
     // cgiscript need be runnable
@@ -109,11 +110,12 @@ int main(int argc, char **argv)
     
     if (FD_ISSET(listenfd, &pool.ready_set)) { 
         connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
-        if(connfd>=1022) LogWrite(LOG, "abnormal", "large fd", connfd);
+        tem_tf.fd=connfd;
+        if(connfd>=1022) LogWrite(LOG, "abnormal", "large fd", &tem_tf);
         if(connfd<FD_SETSIZE)
           add_client(connfd, &pool);
         else{
-          LogWrite(SORRY, "503", "Service Unavailable", connfd);
+          LogWrite(SORRY, "503", "Service Unavailable", &tem_tf);
           close(connfd);
         }
      }
@@ -164,8 +166,9 @@ void add_client(int connfd, Pool *p)
       //this need to further coding
       //modify logwrite to acutlly send the error header
       // need to close the connection
+      tem_tf.fd=connfd;
      LogWrite(SORRY, "503", 
-      "Service Unavailable", connfd);
+      "Service Unavailable", &tem_tf);
      close(connfd);
    }
  }
@@ -321,7 +324,7 @@ void check_clients(Pool *p)
 
 void LogWriteHandle(int type, char *s1, char *s2, time_fd* tf){
   int ret;
-  ret = LogWrite(type, s1, s2, tf->fd);
+  ret = LogWrite(type, s1, s2, tf);
   if(ret==-1)
   {
     Close(bufdestroy(tf));
@@ -335,7 +338,7 @@ void serveHG2(time_fd *tf,char* method, char* path){
   int ret;
   struct stat sbuf;
   stat(path, &sbuf);
-  LogWrite(LOG, method, path, tf->fd);
+  LogWrite(LOG, method, path, tf);
   if(access(path, R_OK)==-1) {
     LogWriteHandle(SORRY, "404", "FILE NOT FOUND", tf);
     return;
@@ -352,7 +355,7 @@ void serveHG2(time_fd *tf,char* method, char* path){
 void serveHG(time_fd *tf,char* method, char* path){
   struct stat sbuf;
   int ret;
-  LogWrite(LOG, method, path, tf->fd);
+  LogWrite(LOG, method, path, tf);
   if (stat(path, &sbuf) < 0) {
     LogWriteHandle(SORRY, "404", "FILE NOT FOUND", tf);
     return;

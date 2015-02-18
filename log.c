@@ -1,7 +1,12 @@
 #include "log.h"
-int LogWrite( int type, char *s1, char *s2, int num)
+int LogWrite( int type, char *s1, char *s2, time_fd* tf)
 
 {
+  int num;
+  if(tf) 
+    num=tf->fd;
+  else
+    num=-1;
   // int num=tf->fd;
   extern char* logfilename;
   int fd ;
