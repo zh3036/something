@@ -2,6 +2,7 @@
 int LogWrite( int type, char *s1, char *s2, int num)
 
 {
+  // int num=tf->fd;
   extern char* logfilename;
   int fd ;
   int ret=0;  

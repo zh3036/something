@@ -1,29 +1,10 @@
 #ifndef FDBUF
 #define FDBUF 010
 
-#include "netdef.h"
+// #include "netdef.h"
 #include "assert.h"
+#include "timefd.h"
 
-
-
-typedef struct buf {
-  char buffer[MAXBUF];
-  char* bufptr_end;//
-  char* bufptr_start;
-  struct buf *next;
-  
-} fd_buf;
-
-typedef struct {
-  int fd;
-  struct timeval tms;
-  unsigned int ini_time;
-  fd_buf* tail_buf;
-  fd_buf* header_buf;
-  size_t cnt;//total num of content in buf
-  char p_flag;
-  int pcnt;
-} time_fd;
 
 int elap_time(time_fd* tf);
 void ini_fd(time_fd* tf, int fd);
