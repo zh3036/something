@@ -14,25 +14,17 @@
 #include "fdbuf.h"
 #include "netdef.h"
 #include "httpdef.h"
+#include "ssldef.h"
 
 // the struct to keep buffer to resume reading
 
 
 
-typedef struct { /* a pool of connected descriptors */ 
-  int maxfd;        /* largest descriptor in read_set */   
-  fd_set read_set;  /* set of all active descriptors */
-  fd_set ready_set; /* subset of descriptors ready for reading  */
-  int nready;       /* number of ready descriptors from select */   
-  int maxi;         /* highest index into client array */
-  time_fd clientfd[FD_SETSIZE];    /* set of active descriptors */
-} Pool; 
-
 time_fd tem_tf;
 
 static Pool pool; 
 
-void init_pool(int listenfd, Pool *p);
+void init_pool(int s_listenfd,int listenfd, Pool *p);
 void add_client(int connfd, Pool *p);
 void check_clients(Pool *p);
 void serveHG(time_fd *tf,char* method, char* path);
@@ -91,9 +83,10 @@ int main(int argc, char **argv)
     // www folder need be readable 
     // cgiscript need be runnable
   } 
+  SslInit(privateKey, certificate);
   listenfd = Open_listenfd(port);
   secure_listenfd=Open_listenfd(secure_port);
-  init_pool(listenfd, &pool);
+  init_pool(secure_listenfd,listenfd, &pool);
   while (1) {
   	/* Wait for listening/connected descriptor(s) to become ready */
   	pool.ready_set = pool.read_set;
@@ -129,7 +122,7 @@ int main(int argc, char **argv)
 /* $end echoservers main */
 
 /* $begin init_pool */
-void init_pool(int listenfd, Pool *p) 
+void init_pool(int s_listenfd,int listenfd, Pool *p) 
 {
     /* Initially, there are no connected descriptors */
     int i;
@@ -137,10 +130,13 @@ void init_pool(int listenfd, Pool *p)
     for (i=0; i< FD_SETSIZE; i++)  
       p->clientfd[i].fd=-1; //-1 means it is ready
 
-    /* Initially, listenfd is only member of select read set */
+    /* Initially, listenfd and slistenfd is only member of select read set */
     p->maxfd = listenfd;
+    if(s_listenfd>listenfd)
+      p->maxfd=s_listenfd;
     FD_ZERO(&p->read_set);
     FD_SET(listenfd, &p->read_set); 
+    FD_SET(s_listenfd, &p->read_set);
 }
 /* $end init_pool */
 

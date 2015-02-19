@@ -9,6 +9,15 @@ typedef struct sockaddr SA;
 /* $end sockaddrdef */
 
 
+typedef struct { /* a pool of connected descriptors */ 
+  int maxfd;        /* largest descriptor in read_set */   
+  fd_set read_set;  /* set of all active descriptors */
+  fd_set ready_set; /* subset of descriptors ready for reading  */
+  int nready;       /* number of ready descriptors from select */   
+  int maxi;         /* highest index into client array */
+  time_fd clientfd[FD_SETSIZE];    /* set of active descriptors */
+} Pool; 
+
 /*
 200_OK -- send proper object data back 
 404_NOT_FOUND -- when objects do not exist in the file system

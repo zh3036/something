@@ -6,17 +6,20 @@
 
 
 CC = gcc
-CFLAGS = -Wall -Wextra -O2 -g -DDRIVER -std=gnu99
+CFLAGS = -Wall -Wextra -O2 -g -DDRIVER -std=gnu99  
+LDFLAGS=  -L/usr/local/opt/openssl/lib
 
-OBJS =netdef.o echoservers.o fdbuf.o log.o httpdef.o
+OBJS =netdef.o ssldef.o echoservers.o fdbuf.o log.o httpdef.o
 
 all: liso
 
 liso: $(OBJS)
-	$(CC) $(CFLAGS) -o lisod $(OBJS)
+	$(CC) $(CFLAGS) -o lisod $(OBJS) -lssl
 
 
-echoservers.o: echoservers.c 
+
+ssldef.o: ssldef.h ssldef.c
+echoservers.o: echoservers.c
 fdbuf.o: fdbuf.h fdbuf.c
 netdef.o: netdef.h netdef.c 
 httpdef.o: httpdef.h httpdef.c
