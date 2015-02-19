@@ -1,5 +1,6 @@
 #include "netdef.h"
 
+
 int open_listenfd(int port) 
 {
   int listenfd, optval=1;
@@ -31,7 +32,7 @@ on any IP address for this host */
 void unix_error(char *msg, int fd) /* unix-style error */
 {
 // fprintf(stderr, "%s: %s\n", msg, strerror(errno));
-  LogWrite(LOG, msg, strerror(errno), fd);
+  LogWrite(LOG, msg, strerror(errno), NULL);
 //exit(0);
 }
 
@@ -97,7 +98,7 @@ return n;
 int Rio_writen(int fd, void *usrbuf, size_t n) 
 {
   if ((size_t)rio_writen(fd, usrbuf, n) != n){
-    LogWrite(ERROR, "500", "internet server", fd);
+    LogWrite(ERROR, "500", "internet server", NULL);
     return -1;
   }
   return 0;
@@ -109,7 +110,7 @@ int Open(const char *pathname, int flags, mode_t mode)
   int rc;
   char *a=(char*)pathname;
   if ((rc = open(pathname, flags, mode))  < 0)
-    LogWrite(ERROR, a, "open error", flags);
+    LogWrite(ERROR, a, "open error", NULL);
   return rc;
 }
 
@@ -118,7 +119,7 @@ void *Mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
   void *ptr;
 
   if ((ptr = mmap(addr, len, prot, flags, fd, offset)) == ((void *) -1))
-    LogWrite(ERROR, "mmap error", (char*)addr, fd);
+    LogWrite(ERROR, "mmap error", (char*)addr, NULL);
   return(ptr);
 }
 
@@ -137,6 +138,6 @@ ssize_t Write(int fd, const void *buf, size_t count)
 {
   ssize_t rc;
   if ((rc =write(fd, buf, count)) ==-1)
-    LogWrite(ERROR, strerror(errno), (char*)buf, fd);
+    LogWrite(ERROR, strerror(errno), (char*)buf,NULL);
   return rc;
 }

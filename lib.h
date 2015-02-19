@@ -20,6 +20,9 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/ip.h>
+#include <openssl/ssl.h>
+
 
 
 #define MAXLINE  8192  /* max text line length */

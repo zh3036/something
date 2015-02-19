@@ -47,7 +47,7 @@ void LogWriteHandle(int type, char *s1, char *s2, time_fd *tf);
 
 int main(int argc, char **argv)
 {
-  int listenfd, connfd, port,ports;
+  int secure_listenfd,listenfd, connfd, port,secure_port;
 
   char LogFile[FILENAMELENGTH], LockFile[FILENAMELENGTH];
   char wwwFolder[FILENAMELENGTH], cgiScript[FILENAMELENGTH];
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
     exit(0);
   } else {
   	port = atoi(argv[1]);
-  	ports = atoi(argv[2]);
+  	secure_port = atoi(argv[2]);
     // before copy need chck the length of args
     strncpy(LogFile,argv[3],FILENAMELENGTH)[FILENAMELENGTH-1]=0;
     strncpy(LockFile, argv[4],FILENAMELENGTH)[FILENAMELENGTH-1]=0;
@@ -92,6 +92,7 @@ int main(int argc, char **argv)
     // cgiscript need be runnable
   } 
   listenfd = Open_listenfd(port);
+  secure_listenfd=Open_listenfd(secure_port);
   init_pool(listenfd, &pool);
   while (1) {
   	/* Wait for listening/connected descriptor(s) to become ready */
