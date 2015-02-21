@@ -15,7 +15,8 @@ fd_buf* ini_buf(){
 }
 
 // ini the fd num with the struct and set time
-void ini_fd(time_fd* tf, int fd){
+void ini_fd(time_fd* tf, int fd,char secure){
+  tf->secure=secure;
   tf->fd=fd;
   tf->cnt=0;
   tf->p_flag=0;

@@ -1,6 +1,11 @@
 #ifndef TIMEFD
 #define TIMEFD 222
 #include "lib.h"
+
+#define SECURE 1
+#define NORMAL 0
+
+
 typedef struct buf {
   char buffer[MAXBUF];
   char* bufptr_end;//
@@ -12,6 +17,7 @@ typedef struct buf {
 typedef struct {
   int fd;
   char secure;
+  SSL *client_context;
   struct timeval tms;
   unsigned int ini_time;
   fd_buf* tail_buf;

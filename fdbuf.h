@@ -7,7 +7,7 @@
 
 
 int elap_time(time_fd* tf);
-void ini_fd(time_fd* tf, int fd);
+void ini_fd(time_fd* tf, int fd,char secure);
 int bufload(time_fd* tf,size_t n);
 int bufread(time_fd* src_tf, char* dst_buf  ,size_t n);
 int bufdestroy(time_fd* tf);

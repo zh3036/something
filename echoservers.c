@@ -26,6 +26,8 @@ static Pool pool;
 
 void init_pool(int s_listenfd,int listenfd, Pool *p);
 void add_client(int connfd, Pool *p);
+void add_secure_client(int connfd, Pool *p,SSL_CTX* ssl_context);
+SSL* wrap_ssl_socket(SSL_CTX* ssl_context, int client_sock);
 void check_clients(Pool *p);
 void serveHG(time_fd *tf,char* method, char* path);
 void read_requesthdrs(time_fd *tf,int* conn,int *length) ;
@@ -40,7 +42,7 @@ void LogWriteHandle(int type, char *s1, char *s2, time_fd *tf);
 int main(int argc, char **argv)
 {
   int secure_listenfd,listenfd, connfd, port,secure_port;
-
+  SSL_CTX *ssl_context;
   char LogFile[FILENAMELENGTH], LockFile[FILENAMELENGTH];
   char wwwFolder[FILENAMELENGTH], cgiScript[FILENAMELENGTH];
   char privateKey[FILENAMELENGTH],certificate[FILENAMELENGTH];
@@ -83,7 +85,7 @@ int main(int argc, char **argv)
     // www folder need be readable 
     // cgiscript need be runnable
   } 
-  SslInit(privateKey, certificate);
+  ssl_context = SslInit(privateKey, certificate);
   listenfd = Open_listenfd(port);
   secure_listenfd=Open_listenfd(secure_port);
   init_pool(secure_listenfd,listenfd, &pool);
@@ -103,17 +105,30 @@ int main(int argc, char **argv)
   	/* If listening descriptor ready, add new client to pool */
     
     if (FD_ISSET(listenfd, &pool.ready_set)) { 
-        connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
-        tem_tf.fd=connfd;
-        if(connfd>=1022) LogWrite(LOG, "abnormal", "large fd", &tem_tf);
-        if(connfd<FD_SETSIZE)
-          add_client(connfd, &pool);
-        else{
-          LogWrite(SORRY, "503", "Service Unavailable", &tem_tf);
-          close(connfd);
-        }
-     }
-    
+      connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
+      tem_tf.fd=connfd;
+      if(connfd>=1022) LogWrite(LOG, "abnormal", "large fd", &tem_tf);
+      if(connfd<FD_SETSIZE)
+        add_client(connfd, &pool);
+      else
+      {
+        LogWrite(SORRY, "503", "Service Unavailable", &tem_tf);
+        close(connfd);
+      }
+    }
+    if (FD_ISSET(secure_listenfd, &pool.ready_set)) { 
+      connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
+      tem_tf.fd=connfd;
+      if(connfd>=1022) LogWrite(LOG, "abnormal", "large fd", &tem_tf);
+      if(connfd<FD_SETSIZE)
+        add_secure_client(connfd, &pool,ssl_context);
+      else
+      {
+        LogWrite(SORRY, "503", "Service Unavailable", &tem_tf);
+        close(connfd);
+      }
+    }
+
     check_clients(&pool); 
   }
 	/* Echo a text line from each ready connected descriptor */ 
@@ -148,7 +163,7 @@ void add_client(int connfd, Pool *p)
       for (i = 0; i < FD_SETSIZE; i++){  /* Find an available slot */
         if (p->clientfd[i].fd < 0) { 
             /* Add connected descriptor to the pool */
-            ini_fd(&(p->clientfd[i]), connfd);
+            ini_fd(&(p->clientfd[i]), connfd,NORMAL);
             /* Add the descriptor to descriptor set */
             FD_SET(connfd, &p->read_set);
             /* Update max descriptor and pool highwater mark */
@@ -169,6 +184,44 @@ void add_client(int connfd, Pool *p)
      close(connfd);
    }
  }
+
+void add_secure_client(int connfd, Pool *p,SSL_CTX* ssl_context)
+{
+  int i;
+  p->nready--;
+  for (i = 0; i < FD_SETSIZE; i++){  /* Find an available slot */
+    if (p->clientfd[i].fd < 0) { 
+        /* Add connected descriptor to the pool */
+        ini_fd(&(p->clientfd[i]), connfd,SECURE);
+        p->clientfd->client_context = wrap_ssl_socket(ssl_context, connfd);
+        if(p->clientfd->client_context ==NULL)
+        {//check if the connection is properly set up or not
+          Close(bufdestroy(&(p->clientfd[i])));
+          FD_CLR(connfd, &p->read_set);
+          p->clientfd[i].fd=-1;
+          break;
+        }
+        /* Add the descriptor to descriptor set */
+        FD_SET(connfd, &p->read_set);
+        /* Update max descriptor and pool highwater mark */
+        if (connfd > p->maxfd ) 
+          p->maxfd = connfd; 
+        if (i > p->maxi)
+          p->maxi = i;
+        break;
+    }
+  }
+  if (i == FD_SETSIZE)
+  { /* Couldn't find an empty slot */
+    //this need to further coding
+    //modify logwrite to acutlly send the error header
+    // need to close the connection
+    tem_tf.fd=connfd;
+    LogWrite(SORRY, "503", 
+    "Service Unavailable", &tem_tf);
+    close(connfd);
+  }
+}
       
 // }
 /* $end add_client */
@@ -191,9 +244,9 @@ void check_clients(Pool *p)
     tf=p->clientfd[i];
     connfd = tf.fd;
     /* If the descriptor is ready, echo a text line from it */
-    if ((connfd > 0) && (FD_ISSET(connfd, &p->ready_set))) { 
+    if ((connfd > 0) && (FD_ISSET(connfd, &p->ready_set))) 
+    { 
       p->nready--;
-      
       for(j=0;j<LOADTIME && !isfinish_bufload(&tf);j++)
       {
         if(bufload(&tf, MAXBUF)==-1)
@@ -280,6 +333,7 @@ void check_clients(Pool *p)
         }
       }
     }
+
   }
 
         // start processing
@@ -402,7 +456,38 @@ void read_requesthdrs(time_fd *tf,int* conn,int *length)
   return;
 }
 
+SSL* wrap_ssl_socket(SSL_CTX* ssl_context, int client_sock)
+{
+  SSL* client_context;
+  tem_tf.fd=client_sock;
+  if ((client_context = SSL_new(ssl_context)) == NULL)
+  {
+    // close(sock);
+    SSL_CTX_free(ssl_context);
+    LogWrite(ERROR, "creating client SSL context", "ssl_new", &tem_tf);
+    return NULL;
+  }
 
+  if (SSL_set_fd(client_context, client_sock) == 0)
+  {
+    // close(sock);
+    SSL_free(client_context);
+    SSL_CTX_free(ssl_context);
+    LogWrite(ERROR, "creating client SSL context", "ssl_set_fd", &tem_tf);
+    return NULL;
+  }  
+
+  if (SSL_accept(client_context) <= 0)
+  {
+    // close(sock);
+    SSL_free(client_context);
+    SSL_CTX_free(ssl_context);
+    LogWrite(ERROR, "Error accepting (handshake) \
+                    client SSL context", "ssl_accpet", &tem_tf);
+    return NULL;
+  }
+  return client_context;
+}
 
 
 /* $end check_clients */

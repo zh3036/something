@@ -1,6 +1,8 @@
 
 #include "ssldef.h"
 
+
+
 SSL_CTX * SslInit(char* key,char* cert)
 {
   SSL_CTX *ssl_context;
@@ -14,7 +16,7 @@ SSL_CTX * SslInit(char* key,char* cert)
       "in initialization", NULL);
     return NULL;
   }
-  
+
   if (SSL_CTX_use_PrivateKey_file(ssl_context, key,
                                 SSL_FILETYPE_PEM) == 0)
   {

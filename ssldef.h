@@ -5,7 +5,6 @@
 
 
 SSL_CTX * SslInit(char* key,char* cert);
-void add_secure_client(int connfd, Pool *p);
 
 
 
