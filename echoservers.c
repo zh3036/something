@@ -15,6 +15,7 @@
 #include "netdef.h"
 #include "httpdef.h"
 #include "ssldef.h"
+#include "daemon.h"
 
 // the struct to keep buffer to resume reading
 
@@ -85,6 +86,9 @@ int main(int argc, char **argv)
     // www folder need be readable 
     // cgiscript need be runnable
   } 
+  daemonize(LockFile);
+
+
   ssl_context = SslInit(privateKey, certificate);
   if(ssl_context==NULL)
   {

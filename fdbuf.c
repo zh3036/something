@@ -100,7 +100,8 @@ int bufread(time_fd* src_tf, char* dst_buf  ,size_t n){
   //how many left for the current buffer
   size_t toread = src_tf->header_buf->bufptr_end - 
                     src_tf->header_buf->bufptr_start;
-  if(toread==0){//if current buffer is empty,remove it
+  if(toread==0 && \
+  src_tf->header_buf->bufptr_start != src_tf->header_buf->buffer){//if current buffer is empty,remove it
     fd_buf* bf=src_tf->header_buf;
     src_tf->header_buf=src_tf->header_buf->next;
     free(bf); 
