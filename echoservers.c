@@ -86,6 +86,11 @@ int main(int argc, char **argv)
     // cgiscript need be runnable
   } 
   ssl_context = SslInit(privateKey, certificate);
+  if(ssl_context==NULL)
+  {
+    printf("failed to establish ssl_context\n");
+    return -1;
+  }
   listenfd = Open_listenfd(port);
   secure_listenfd=Open_listenfd(secure_port);
   init_pool(secure_listenfd,listenfd, &pool);
@@ -195,7 +200,7 @@ void add_secure_client(int connfd, Pool *p,SSL_CTX* ssl_context)
         ini_fd(&(p->clientfd[i]), connfd,SECURE);
         p->clientfd->client_context = wrap_ssl_socket(ssl_context, connfd);
         if(p->clientfd->client_context ==NULL)
-        {//check if the connection is properly set up or not
+        {//check if the ssl connection is properly set up or not
           Close(bufdestroy(&(p->clientfd[i])));
           FD_CLR(connfd, &p->read_set);
           p->clientfd[i].fd=-1;
@@ -249,7 +254,7 @@ void check_clients(Pool *p)
       p->nready--;
       for(j=0;j<LOADTIME && !isfinish_bufload(&tf);j++)
       {
-        if(bufload(&tf, MAXBUF)==-1)
+        if(Bufload(&tf, MAXBUF)<0)
         {
           Close(bufdestroy(&tf));
           FD_CLR(connfd, &p->read_set);
@@ -394,7 +399,7 @@ void serveHG2(time_fd *tf,char* method, char* path){
     LogWriteHandle(SORRY, "404", "FILE NOT FOUND", tf);
     return;
   }
-  ret=serve_static(tf->fd, path, &sbuf,method);
+  ret=serve_static(tf, path, &sbuf,method);
   if(ret==-1)
   {
     Close(bufdestroy(tf));
@@ -416,7 +421,7 @@ void serveHG(time_fd *tf,char* method, char* path){
     LogWriteHandle(SORRY, "404", "FILE NOT FOUND", tf);
     return;
   }
-  ret=serve_static(tf->fd, path, &sbuf,method);
+  ret=serve_static(tf, path, &sbuf,method);
   if(ret==-1)
   {
     Close(bufdestroy(tf));

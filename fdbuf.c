@@ -32,10 +32,39 @@ void add_buf(time_fd* tf){
   // tf->fbuf->next->prev=tf->fbuf;
   tf->tail_buf=tf->tail_buf->next;
 }
+int Bufload(time_fd *tf, size_t n)
+{
+  if(tf->secure==NORMAL)
+    return bufload(tf,n);
+  if(tf->secure==SECURE)
+    return secure_bufload(tf, n);
+  return -2;
+}
 
+int secure_bufload(time_fd *tf,size_t n)
+{
+  int bufret,pendbyte;
+  bufret=bufload(tf, n); //read first
+  if(bufret<0)       // if error then return
+    return bufret;      
+  while(( pendbyte = SSL_pending(tf->client_context))>0)
+    {//check for pending bytes, if there are any load again
+      int bufret2;
+      bufret2=bufload(tf, pendbyte);
+      if(bufret2<0)
+      {
+        bufret=-1;
+        break;        
+      }
+      else
+        bufret+=bufret2;
+    }
+  return bufret;
+}
 int bufload(time_fd* tf,size_t n){
   // if(!(tf->fbuf)) //if no buf before create the first buf
   //   tf->fbuf = ini_buf();
+  int cnt;
   if(tf->tail_buf->bufptr_end==
      tf->tail_buf->buffer+MAXBUF)// if buf is full, add a buf
     add_buf(tf);
@@ -46,7 +75,14 @@ int bufload(time_fd* tf,size_t n){
   size_t toread=spare;
   if(toread>n) toread=n;
   //see how many we actually read
-  int cnt=read(tf->fd, tf->tail_buf->bufptr_end, toread);
+  if(tf->secure==SECURE)
+  {
+    cnt=SSL_read(tf->client_context,tf->tail_buf->bufptr_end,toread);
+  }
+  else 
+  {
+    cnt=read(tf->fd, tf->tail_buf->bufptr_end, toread);
+  }
   switch(cnt){
     case -1: return -1; // error
     case 0: return 0;// EOF
@@ -115,6 +151,11 @@ int bufdestroy(time_fd* tf){
     tf->header_buf=tf->header_buf->next;
     free(bf);
   } 
+  if(tf->secure==SECURE && tf->client_context!=NULL)
+  {
+    SSL_shutdown(tf->client_context);
+    SSL_free(tf->client_context);
+  }
   return fd;
 }
 

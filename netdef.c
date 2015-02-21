@@ -32,6 +32,7 @@ on any IP address for this host */
 void unix_error(char *msg, int fd) /* unix-style error */
 {
 // fprintf(stderr, "%s: %s\n", msg, strerror(errno));
+  fd++;
   LogWrite(LOG, msg, strerror(errno), NULL);
 //exit(0);
 }
@@ -75,24 +76,50 @@ int Select(int  n, fd_set *readfds, fd_set *writefds,
     unix_error("Select error", n);
   return rc;
 }
-ssize_t rio_writen(int fd, void *usrbuf, size_t n) 
+
+int rio_write_secure(SSL* client_context, void *usrbuf,size_t n)
+{
+  size_t nleft=n;
+  char *bufp = (char*)usrbuf;
+  while(nleft>0)
+  {
+    ssize_t nwritten;
+    if((nwritten=SSL_write(client_context, bufp, nleft))<0)
+    {
+      switch(SSL_get_error(client_context, nwritten))
+      {
+        case SSL_ERROR_WANT_WRITE:
+        case SSL_ERROR_WANT_READ:
+          nwritten=0;
+          break;
+        default:
+          return -1;
+      }
+    }
+    nleft -= nwritten;
+    bufp +=nwritten;
+  }
+  return n;
+}
+
+int rio_writen(int fd, void *usrbuf, size_t n) 
 {
   size_t nleft = n;
-  ssize_t nwritten;
   char *bufp = (char*)usrbuf;
 
   while (nleft > 0) {
-    if ((nwritten =Write(fd, bufp, nleft)) <= 0) 
+    ssize_t nwritten;
+    if ((nwritten =Write(fd, bufp, nleft)) < 0) 
     {
       if (errno == EINTR)  /* interrupted by sig handler return */
         nwritten = 0;    /* and callWrite() again */
       else
         return -1;       /* errorno set byWrite() */
     }
-  nleft -= nwritten;
-  bufp += nwritten;
-}
-return n;
+    nleft -= nwritten;
+    bufp += nwritten;
+  }
+  return n;
 }
 
 int Rio_writen(int fd, void *usrbuf, size_t n) 

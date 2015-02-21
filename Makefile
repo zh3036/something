@@ -6,7 +6,7 @@
 
 
 CC = gcc
-CFLAGS = -Wall -Wextra -O2 -g -DDRIVER -std=gnu99  
+CFLAGS = -Wall -Wextra -O2 -g -DDRIVER -std=gnu99  -Wno-deprecated
 LDFLAGS=  -L/usr/local/opt/openssl/lib
 
 OBJS =netdef.o ssldef.o echoservers.o fdbuf.o log.o httpdef.o

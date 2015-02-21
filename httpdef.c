@@ -49,8 +49,9 @@ char *get_time_str(char *time_buf)
 
 
 
-int serve_static(int fd, char *filename, struct stat *sbuf, char* method) 
+int serve_static(time_fd *tf, char *filename, struct stat *sbuf, char* method) 
 {
+  int fd=tf->fd;
   int ret=0,ret2=0;
   int srcfd;
   char *srcp, filetype[MAXLINE], buf[MAXBUF];
@@ -80,17 +81,34 @@ int serve_static(int fd, char *filename, struct stat *sbuf, char* method)
   sprintf(buf, "%sContent-length: %d\r\n", buf, filesize);
   sprintf(buf, "%sLast-Modified: %s\r\n",buf,lm);
   sprintf(buf, "%sContent-type: %s\r\n\r\n", buf, filetype);
-  ret=Rio_writen(fd, buf, strlen(buf));
+  if(tf->secure==NORMAL)
+  {
+    ret=Rio_writen(fd, buf, strlen(buf));
 
-  /* Send response body to client */
-  if(method[0]=='G'){
-    srcfd = Open(filename, O_RDONLY, 0);
-    srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0);
-    Close(srcfd);
-    ret2=Rio_writen(fd, srcp, filesize);
-    Munmap(srcp, filesize);
+    /* Send response body to client */
+    if(method[0]=='G'){
+      srcfd = Open(filename, O_RDONLY, 0);
+      srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0);
+      Close(srcfd);
+      ret2=Rio_writen(fd, srcp, filesize);
+      Munmap(srcp, filesize);
+    } 
+  }
+  else if (tf->secure==SECURE)
+  {
+    ret=rio_write_secure(tf->client_context,buf, strlen(buf));
+    if(method[0]=='G'){
+      srcfd = Open(filename, O_RDONLY, 0);
+      srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0);
+      Close(srcfd);
+      ret2=rio_write_secure(tf->client_context, srcp, filesize);
+      Munmap(srcp, filesize);
+    } 
   } 
-  if(ret<ret2)
+  else
+    return -1;
+
+  if(ret<ret2)//what is this........return -1 when error
     return ret;
   return ret2;
 }
