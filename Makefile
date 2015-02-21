@@ -33,7 +33,7 @@ submit:
 	@make clean; cd ..; tar cvf echoserver_checkpoint-2.tar 15-441-project-1 
 
 run:
-	@./lisod 1234 12345 a b c d e f
+	@./lisod 1234 12345 log lock www cgiS liso.key liso.crt
 
 lldb:
-	@lldb lisod 1234 12345 a b c d e f
+	@lldb lisod 1234 12345 log lock www cgiS liso.key liso.crt

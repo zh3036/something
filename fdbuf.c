@@ -38,7 +38,7 @@ int Bufload(time_fd *tf, size_t n)
     return bufload(tf,n);
   if(tf->secure==SECURE)
     return secure_bufload(tf, n);
-  return -2;
+  return -1;
 }
 
 int secure_bufload(time_fd *tf,size_t n)
@@ -61,6 +61,7 @@ int secure_bufload(time_fd *tf,size_t n)
     }
   return bufret;
 }
+
 int bufload(time_fd* tf,size_t n){
   // if(!(tf->fbuf)) //if no buf before create the first buf
   //   tf->fbuf = ini_buf();
@@ -78,6 +79,8 @@ int bufload(time_fd* tf,size_t n){
   if(tf->secure==SECURE)
   {
     cnt=SSL_read(tf->client_context,tf->tail_buf->bufptr_end,toread);
+    printf("cnt is %d\n", cnt);
+    printf("read contets: %s\n", tf->tail_buf->buffer);
   }
   else 
   {

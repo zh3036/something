@@ -122,11 +122,16 @@ int main(int argc, char **argv)
       }
     }
     if (FD_ISSET(secure_listenfd, &pool.ready_set)) { 
-      connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
+      printf("https connection comming\n");
+      connfd = Accept(secure_listenfd, (SA *)&clientaddr, &clientlen);
+      printf("https connection comming2\n");
       tem_tf.fd=connfd;
       if(connfd>=1022) LogWrite(LOG, "abnormal", "large fd", &tem_tf);
       if(connfd<FD_SETSIZE)
+      {
+        printf("before the call of add secure\n");
         add_secure_client(connfd, &pool,ssl_context);
+      }
       else
       {
         LogWrite(SORRY, "503", "Service Unavailable", &tem_tf);
@@ -192,14 +197,15 @@ void add_client(int connfd, Pool *p)
 
 void add_secure_client(int connfd, Pool *p,SSL_CTX* ssl_context)
 {
+  printf("start to add secure client\n");
   int i;
   p->nready--;
   for (i = 0; i < FD_SETSIZE; i++){  /* Find an available slot */
     if (p->clientfd[i].fd < 0) { 
         /* Add connected descriptor to the pool */
         ini_fd(&(p->clientfd[i]), connfd,SECURE);
-        p->clientfd->client_context = wrap_ssl_socket(ssl_context, connfd);
-        if(p->clientfd->client_context ==NULL)
+        p->clientfd[i].client_context = wrap_ssl_socket(ssl_context, connfd);
+        if(p->clientfd[i].client_context ==NULL)
         {//check if the ssl connection is properly set up or not
           Close(bufdestroy(&(p->clientfd[i])));
           FD_CLR(connfd, &p->read_set);
