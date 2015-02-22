@@ -88,7 +88,7 @@ int main(int argc, char **argv)
     // www folder need be readable 
     // cgiscript need be runnable
   } 
-  // daemonize(LockFile);
+  daemonize(LockFile);
 
 
   ssl_context = SslInit(privateKey, certificate);
