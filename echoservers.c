@@ -296,17 +296,37 @@ void check_clients(Pool *p)
             Close(bufdestroy(&tf));
             FD_CLR(connfd, &p->read_set);
             p->clientfd[i].fd=-1;
-          } else if(method[0]=='P'){// if it is post method
-            if(con_len<=-1 && con_len != MAGICLENGTH){ 
+          } 
+          else if(method[0]=='P')
+          {// if it is post method
+            if(con_len<=-1 && con_len != MAGICLENGTH)
+            { 
             // if there are no length content
               LogWriteHandle(SORRY, "411", "Length Required", &tf);
-            } else {
+            } 
+            else
+            {
               tf.p_flag=1;
               tf.pcnt=con_len;
               // here process post
             }                             
-          } else{ //method here is either GET or HEAD
-            
+          } 
+          else
+          { //method here is either GET or HEAD
+            if(con_len != MAGICLENGTH)
+            {
+              if(con_len<=-1)
+              { 
+              // if there are no length content
+                LogWriteHandle(SORRY, "400", "BAD REQUEST", &tf);
+              } 
+              else
+              {
+                tf.p_flag=1;
+                tf.pcnt=con_len;
+                // here process post
+              } 
+            } 
             if(strstr(path, "cgi"))
             {
               LogWriteHandle(SORRY, "501", "Not Implemented", &tf);
@@ -346,6 +366,7 @@ void check_clients(Pool *p)
           tem=bufread(&tf, post_buf, tf.pcnt);
           tf.pcnt-=tem;
         }
+        //time out for body can be added here
         if(tf.pcnt<=0) {
           tf.p_flag=0;
           LogWriteHandle(SORRY, "200", "OK", &tf);
