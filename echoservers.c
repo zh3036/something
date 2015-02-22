@@ -493,7 +493,6 @@ void read_requesthdrs(time_fd *tf,int* conn,int *length)
         if(!isdigit(right[ic]))
         {
           *length=-1;
-          return;
         }
       }
       *length=atoi(right);

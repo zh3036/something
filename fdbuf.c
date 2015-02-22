@@ -153,6 +153,8 @@ int bufread(time_fd* src_tf, char* dst_buf  ,size_t n){
     memcpy(dst_buf, src_tf->header_buf->bufptr_start,toread);
     src_tf->header_buf->bufptr_start+=toread;
     src_tf->cnt-=toread;
+    if(src_tf->p_flag ==1)
+      printf("read buffer:\n%s\n",dst_buf);
   } else{
     toread=0;
   }
@@ -178,6 +180,7 @@ int bufreadline(time_fd* src_tf,char* dst_buf ,size_t maxlen){
         return -1;    /* error */
   }
   *bufp = 0;
+  printf("read a line\n:%s\n",dst_buf);
   return n;
 }
 
