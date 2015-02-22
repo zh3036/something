@@ -269,12 +269,14 @@ void check_clients(Pool *p)
     printf("start to check_cl1\n");
     /* If the descriptor is ready, echo a text line from it */
 
+    // should not read when there is nothing to read
 
     if ((connfd > 0) /*|| (FD_ISSET(connfd, &p->ready_set))*/) 
     { 
       printf("start to do something with:%d\n", connfd);
       p->nready--;
-      for(j=0;j<LOADTIME && !isfinish_bufload(&tf);j++)
+      for(j=0;j<LOADTIME && \
+        (FD_ISSET(connfd, &p->ready_set))&& !isfinish_bufload(&tf);j++)
       {
         printf("into the load loop?\n");
         int bufret=Bufload(&tf, MAXBUF);
@@ -296,7 +298,7 @@ void check_clients(Pool *p)
         printf("into the load loop?3\n");
 
         printf("before check time passed %d\n", elap_time_load(&tf));
-        if(elap_time_load(&tf)>=1)
+        if(bufret==0 && elap_time_load(&tf)>=1)
         {
           printf("after check time passed %d\n", elap_time_load(&tf));
           Close(bufdestroy(&tf));
@@ -377,8 +379,9 @@ void check_clients(Pool *p)
                 tf.pcnt=con_len;
                 // here process post
               } 
-            } 
-            else if(strstr(path, "cgi"))
+            }
+
+            if(strstr(path, "cgi"))
             {
               LogWriteHandle(SORRY, "501", "Not Implemented", &tf);
             }

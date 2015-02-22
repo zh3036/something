@@ -38,3 +38,6 @@ run:
 
 lldb:
 	@lldb lisod 1234 12345 log lock www cgiS liso.key liso.crt
+
+gittag:
+	@git tag -f -a final -m "xxx"
