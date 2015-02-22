@@ -273,17 +273,21 @@ void check_clients(Pool *p)
           p->clientfd[i].fd=-1;     
           break; 
         }
+
         // time out needed here
         //check for incompete request
       }
 
       if(isfinish_bufload(&tf) && tf.p_flag !=1){  
+        printf("prepare look at the buffer:\n");
+        printf("%s\n",tf.header_buf->buffer);
         //not in post mode, deal with a new request
         bufreadline(&tf, buf, MAXLINE-1);
         sscanf(buf, "%s %s %s", method, path, version);
         v = strstr(version, "HTTP/1.1");
         if (v == NULL){ //check for the version 
           LogWriteHandle(SORRY,"505","HTTP VERSION NOT SUPPORTED", &tf);
+          read_requesthdrs(&tf, &consume, &consume);          
         } else if (!(strstr(method,"GET") || //check for method
                            strstr(method,"POST") ||
                            strstr(method, "HEAD"))){
@@ -319,6 +323,7 @@ void check_clients(Pool *p)
             {
               if(con_len<=-1)
               { 
+                printf("bad length on get or head\n");
               // if there are no length content
                 LogWriteHandle(SORRY, "400", "BAD REQUEST", &tf);
               } 
@@ -329,7 +334,7 @@ void check_clients(Pool *p)
                 // here process post
               } 
             } 
-            if(strstr(path, "cgi"))
+            else if(strstr(path, "cgi"))
             {
               LogWriteHandle(SORRY, "501", "Not Implemented", &tf);
             }

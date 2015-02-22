@@ -5,7 +5,10 @@
 #include "assert.h"
 #include "timefd.h"
 
-
+int elap_time_load(time_fd* tf);
+int elap_time_body(time_fd* tf);
+int ini_time_load(time_fd* tf);
+int ini_time_body(time_fd* tf);
 int elap_time(time_fd* tf);
 void ini_fd(time_fd* tf, int fd,char secure);
 int Bufload(time_fd* tf,size_t n);

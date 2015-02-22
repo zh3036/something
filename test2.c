@@ -166,10 +166,10 @@ int test_strstr(){
 int file_test(void)
 {
         // test_time();
-        FILE* f=fopen("test.log", "r");
-        int fd=fileno(f);
+        // FILE* f=fopen("test.log", "r");
+        // int fd=fileno(f);
         time_fd tst;
-        ini_fd(&tst,fd);
+        // ini_fd(&tst,fd);
         bufload(&tst, 2);
         char buf[200];
         printf("%s\n", tst.tail_buf->buffer);
@@ -226,7 +226,7 @@ void test_time(){
 
 // caculate the time passed since the object is inied
 int elap_time(time_fd* tf){
-  return tf->tms.tv_sec-tf->ini_time;
+  return tf->tms.tv_sec-tf->ini_time_load;
 }
 
 fd_buf* ini_buf(){
@@ -238,14 +238,14 @@ fd_buf* ini_buf(){
   return fb;
 }
 
-// ini the fd num with the struct and set time
-void ini_fd(time_fd* tf, int fd){
-  tf->fd=fd;
-  tf->cnt=0;
-  tf->ini_time=tf->tms.tv_sec;
-  tf->tail_buf = ini_buf();
-  tf->header_buf= tf->tail_buf;
-}
+// // ini the fd num with the struct and set time
+// void ini_fd(time_fd* tf, int fd){
+//   tf->fd=fd;
+//   tf->cnt=0;
+//   tf->ini_time=tf->tms.tv_sec;
+//   tf->tail_buf = ini_buf();
+//   tf->header_buf= tf->tail_buf;
+// }
 
 
 void add_buf(time_fd* tf){

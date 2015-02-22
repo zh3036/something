@@ -1,8 +1,44 @@
 #include "fdbuf.h"
 
 // caculate the time passed since the object is inied
-int elap_time(time_fd* tf){
-  return tf->tms.tv_sec-tf->ini_time;
+int elap_time_load(time_fd* tf){
+  if(tf->have_ini_time){
+    gettimeofday(&(tf->tms_load), NULL);
+    return tf->tms_load.tv_sec-tf->ini_time_load;
+  }
+  return 0;
+}
+
+int elap_time_body(time_fd* tf){
+  if(tf->have_ini_body){
+    gettimeofday(&(tf->tms_body), NULL);
+    return tf->tms_body.tv_sec-tf->ini_time_body;
+  }
+  return 0;
+}
+
+int ini_time_load(time_fd* tf)
+{
+  if(!tf->have_ini_time)
+  {
+    gettimeofday(&(tf->tms_load), NULL);
+    tf->ini_time_load=tf->tms_load.tv_sec;
+    tf->have_ini_time=1;    
+    return 0;
+  } 
+  return 1;  
+}
+
+int ini_time_body(time_fd* tf)
+{
+  if(!tf->have_ini_body)
+  {
+    gettimeofday(&(tf->tms_body), NULL);
+    tf->ini_time_body=tf->tms_body.tv_sec;
+    tf->ini_time_body=1;
+    return 0;
+  }
+  return 1;  
 }
 
 fd_buf* ini_buf(){
@@ -21,9 +57,10 @@ void ini_fd(time_fd* tf, int fd,char secure){
   tf->cnt=0;
   tf->p_flag=0;
   tf->pcnt=-1;
-  tf->ini_time=tf->tms.tv_sec;
   tf->tail_buf = ini_buf();
   tf->header_buf= tf->tail_buf;
+  tf->have_ini_time=0;
+  tf->ini_time_body=0;
 }
 
 
@@ -69,7 +106,7 @@ int bufload(time_fd* tf,size_t n){
   if(tf->tail_buf->bufptr_end==
      tf->tail_buf->buffer+MAXBUF)// if buf is full, add a buf
     add_buf(tf);
-  //check how many space left
+  //check how many space lefts
   size_t spare=MAXBUF - (tf->tail_buf->bufptr_end 
                       - tf->tail_buf->buffer);
   //min, decide how many can we read
@@ -79,6 +116,7 @@ int bufload(time_fd* tf,size_t n){
   if(tf->secure==SECURE)
   {
     cnt=SSL_read(tf->client_context,tf->tail_buf->bufptr_end,toread);
+
     printf("cnt is %d\n", cnt);
     printf("read contets: %s\n", tf->tail_buf->buffer);
   }
@@ -86,6 +124,7 @@ int bufload(time_fd* tf,size_t n){
   {
     cnt=read(tf->fd, tf->tail_buf->bufptr_end, toread);
   }
+  printf("recv data :\n %s\n", tf->tail_buf->bufptr_end);
   switch(cnt){
     case -1: return -1; // error
     case 0: return 0;// EOF
