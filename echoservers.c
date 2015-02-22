@@ -37,7 +37,9 @@ void LogWriteHandle(int type, char *s1, char *s2, time_fd *tf);
 
 #define FILENAMELENGTH 303
 #define LOADTIME 5
+#define MAGICLENGTH -237774
 
+int consume;
 
 
 int main(int argc, char **argv)
@@ -86,7 +88,7 @@ int main(int argc, char **argv)
     // www folder need be readable 
     // cgiscript need be runnable
   } 
-  daemonize(LockFile);
+  // daemonize(LockFile);
 
 
   ssl_context = SslInit(privateKey, certificate);
@@ -284,8 +286,9 @@ void check_clients(Pool *p)
                            strstr(method,"POST") ||
                            strstr(method, "HEAD"))){
           LogWriteHandle(SORRY, "501", "Not Implemented", &tf);
+          read_requesthdrs(&tf, &consume, &consume);
         } else {// now the version is right, method is right
-          int con_len=-1,is_conn=1;
+          int con_len=MAGICLENGTH,is_conn=1;
           //let us parse the header to get the content length 
           // and whether should we close the connection
           read_requesthdrs(&tf, &is_conn, &con_len); 
@@ -294,7 +297,8 @@ void check_clients(Pool *p)
             FD_CLR(connfd, &p->read_set);
             p->clientfd[i].fd=-1;
           } else if(method[0]=='P'){// if it is post method
-            if(con_len<=-1){ // if there are no length content
+            if(con_len<=-1 && con_len != MAGICLENGTH){ 
+            // if there are no length content
               LogWriteHandle(SORRY, "411", "Length Required", &tf);
             } else {
               tf.p_flag=1;
@@ -389,9 +393,8 @@ void check_clients(Pool *p)
 }
 
 void LogWriteHandle(int type, char *s1, char *s2, time_fd* tf){
-  int ret,c,l;
+  int ret;
   ret = LogWrite(type, s1, s2, tf);
-  read_requesthdrs(tf, &c, &l);
   if(ret==-1)
   {
     Close(bufdestroy(tf));
