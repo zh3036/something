@@ -86,7 +86,7 @@ int main(int argc, char **argv)
     // www folder need be readable 
     // cgiscript need be runnable
   } 
-  daemonize(LockFile);
+  // daemonize(LockFile);
 
 
   ssl_context = SslInit(privateKey, certificate);
@@ -389,8 +389,9 @@ void check_clients(Pool *p)
 }
 
 void LogWriteHandle(int type, char *s1, char *s2, time_fd* tf){
-  int ret;
+  int ret,c,l;
   ret = LogWrite(type, s1, s2, tf);
+  read_requesthdrs(tf, &c, &l);
   if(ret==-1)
   {
     Close(bufdestroy(tf));
