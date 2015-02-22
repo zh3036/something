@@ -50,11 +50,9 @@ void test_time(){
         int u=tv.tv_usec;
         long s=tv.tv_sec;
         signal( SIGALRM, signal_handler);
-        alarm(1);
-        while(1);
-
+ 
         for(i = 0; i < 100; i++){
-                for(int j=0;j<10000;j++){;}
+                for(int j=0;j<1000000;j++){;}
                 gettimeofday(&tv, NULL);
                 printf("%d\t%ld\n", tv.tv_usec-u, tv.tv_sec-s);
                 // u=tv.tv_usec;

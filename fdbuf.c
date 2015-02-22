@@ -5,8 +5,8 @@ int elap_time_load(time_fd* tf){
   if(tf->have_ini_time){
     // printf("elap found inied time\n");
     gettimeofday(&(tf->tms_load), NULL);
-    // printf("%d passed\n", (int)(tf->tms_load.tv_usec-tf->ini_time_load));
-    return tf->tms_load.tv_usec-tf->ini_time_load;
+    // printf("%d passed\n", (int)(tf->tms_load.tv_sec-tf->ini_time_load));
+    return tf->tms_load.tv_sec-tf->ini_time_load;
   }
 
   return 0;
@@ -15,7 +15,7 @@ int elap_time_load(time_fd* tf){
 int elap_time_body(time_fd* tf){
   if(tf->have_ini_body){
     gettimeofday(&(tf->tms_body), NULL);
-    return tf->tms_body.tv_usec-tf->ini_time_body;
+    return tf->tms_body.tv_sec-tf->ini_time_body;
   }
   return 0;
 }
@@ -24,9 +24,10 @@ int ini_time_load(time_fd* tf)
 {
   if(!tf->have_ini_time)
   {
+    printf("should happen once\n");
     gettimeofday(&(tf->tms_load), NULL);
-    tf->ini_time_load=tf->tms_load.tv_usec;
-    printf("%u\n", tf->ini_time_load);
+    tf->ini_time_load=tf->tms_load.tv_sec;
+    printf("time inied %u\n", tf->ini_time_load);
     tf->have_ini_time=1;    
     return 0;
   } 
@@ -38,7 +39,7 @@ int ini_time_body(time_fd* tf)
   if(!tf->have_ini_body)
   {
     gettimeofday(&(tf->tms_body), NULL);
-    tf->ini_time_body=tf->tms_body.tv_usec;
+    tf->ini_time_body=tf->tms_body.tv_sec;
     tf->ini_time_body=1;
     return 0;
   }
@@ -126,6 +127,7 @@ int bufload(time_fd* tf,size_t n){
   }
   else 
   {
+
     cnt=read(tf->fd, tf->tail_buf->bufptr_end, toread);
   }
   printf("recv data %d bytes :\n %s\n", cnt,tf->tail_buf->bufptr_end);
@@ -141,15 +143,25 @@ int bufload(time_fd* tf,size_t n){
 
 int bufread(time_fd* src_tf, char* dst_buf  ,size_t n){
   //how many left for the current buffer
+  if(src_tf->header_buf->bufptr_start==src_tf->tail_buf->bufptr_end)
+    return 0;
+
   size_t toread = src_tf->header_buf->bufptr_end - 
                     src_tf->header_buf->bufptr_start;
-  if(toread==0 && \
-  src_tf->header_buf->bufptr_start != src_tf->header_buf->buffer){//if current buffer is empty,remove it
-    fd_buf* bf=src_tf->header_buf;
-    src_tf->header_buf=src_tf->header_buf->next;
-    free(bf); 
-    toread= src_tf->header_buf->bufptr_end-
-            src_tf->header_buf->bufptr_start;
+  if(toread==0 )
+  {
+    if(src_tf->header_buf->bufptr_start != src_tf->header_buf->buffer)//if current buffer is empty,remove it
+    { 
+      fd_buf* bf=src_tf->header_buf;
+      src_tf->header_buf=src_tf->header_buf->next;
+      free(bf); 
+      toread= src_tf->header_buf->bufptr_end-
+              src_tf->header_buf->bufptr_start;
+    }
+    else
+    {
+      return 0;
+    }
   } 
   if(n<toread) toread=n;
 

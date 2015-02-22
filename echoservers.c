@@ -36,7 +36,7 @@ void LogWriteHandle(int type, char *s1, char *s2, time_fd *tf);
 // int full_flag=0;
 
 #define FILENAMELENGTH 303
-#define LOADTIME 5
+#define LOADTIME 1
 #define MAGICLENGTH -237774
 
 int consume;
@@ -270,7 +270,7 @@ void check_clients(Pool *p)
     /* If the descriptor is ready, echo a text line from it */
 
 
-    if ((connfd > 0) || (FD_ISSET(connfd, &p->ready_set))) 
+    if ((connfd > 0) /*|| (FD_ISSET(connfd, &p->ready_set))*/) 
     { 
       printf("start to do something with:%d\n", connfd);
       p->nready--;
@@ -296,12 +296,13 @@ void check_clients(Pool *p)
         printf("into the load loop?3\n");
 
         printf("before check time passed %d\n", elap_time_load(&tf));
-        if(elap_time_load(&tf)>1000)
+        if(elap_time_load(&tf)>=1)
         {
           printf("after check time passed %d\n", elap_time_load(&tf));
           Close(bufdestroy(&tf));
           FD_CLR(connfd, &p->read_set);
-          p->clientfd[i].fd=-1;               
+          p->clientfd[i].fd=-1;           
+          printf("made %d -1\n",p->clientfd[i].fd );    
           return;
         }
 
@@ -336,6 +337,7 @@ void check_clients(Pool *p)
           //let us parse the header to get the content length 
           // and whether should we close the connection
           read_requesthdrs(&tf, &is_conn, &con_len); 
+          printf("why here?\n");
           if(!is_conn) 
           {
             Close(bufdestroy(&tf));
