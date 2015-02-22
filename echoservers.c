@@ -273,6 +273,8 @@ void check_clients(Pool *p)
           p->clientfd[i].fd=-1;     
           break; 
         }
+        // time out needed here
+        //check for incompete request
       }
 
       if(isfinish_bufload(&tf) && tf.p_flag !=1){  
