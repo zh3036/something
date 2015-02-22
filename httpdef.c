@@ -84,13 +84,14 @@ int serve_static(time_fd *tf, char *filename, struct stat *sbuf, char* method)
   if(tf->secure==NORMAL)
   {
     ret=Rio_writen(fd, buf, strlen(buf));
-
+    if (ret<0) return -1;
     /* Send response body to client */
     if(method[0]=='G'){
       srcfd = Open(filename, O_RDONLY, 0);
       srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0);
       Close(srcfd);
       ret2=Rio_writen(fd, srcp, filesize);
+
       Munmap(srcp, filesize);
     } 
   }
@@ -102,6 +103,7 @@ int serve_static(time_fd *tf, char *filename, struct stat *sbuf, char* method)
       srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0);
       Close(srcfd);
       ret2=rio_write_secure(tf->client_context, srcp, filesize);
+      if(ret2<0) return -1;
       Munmap(srcp, filesize);
     } 
   } 

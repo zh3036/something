@@ -124,6 +124,7 @@ int rio_writen(int fd, void *usrbuf, size_t n)
 
 int Rio_writen(int fd, void *usrbuf, size_t n) 
 {
+  printf("trying to write:\n%s\n", (char*)usrbuf);
   if ((size_t)rio_writen(fd, usrbuf, n) != n){
     LogWrite(ERROR, "500", "internet server", NULL);
     return -1;

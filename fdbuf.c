@@ -3,16 +3,19 @@
 // caculate the time passed since the object is inied
 int elap_time_load(time_fd* tf){
   if(tf->have_ini_time){
+    // printf("elap found inied time\n");
     gettimeofday(&(tf->tms_load), NULL);
-    return tf->tms_load.tv_sec-tf->ini_time_load;
+    // printf("%d passed\n", (int)(tf->tms_load.tv_usec-tf->ini_time_load));
+    return tf->tms_load.tv_usec-tf->ini_time_load;
   }
+
   return 0;
 }
 
 int elap_time_body(time_fd* tf){
   if(tf->have_ini_body){
     gettimeofday(&(tf->tms_body), NULL);
-    return tf->tms_body.tv_sec-tf->ini_time_body;
+    return tf->tms_body.tv_usec-tf->ini_time_body;
   }
   return 0;
 }
@@ -22,7 +25,8 @@ int ini_time_load(time_fd* tf)
   if(!tf->have_ini_time)
   {
     gettimeofday(&(tf->tms_load), NULL);
-    tf->ini_time_load=tf->tms_load.tv_sec;
+    tf->ini_time_load=tf->tms_load.tv_usec;
+    printf("%u\n", tf->ini_time_load);
     tf->have_ini_time=1;    
     return 0;
   } 
@@ -34,7 +38,7 @@ int ini_time_body(time_fd* tf)
   if(!tf->have_ini_body)
   {
     gettimeofday(&(tf->tms_body), NULL);
-    tf->ini_time_body=tf->tms_body.tv_sec;
+    tf->ini_time_body=tf->tms_body.tv_usec;
     tf->ini_time_body=1;
     return 0;
   }
@@ -124,7 +128,7 @@ int bufload(time_fd* tf,size_t n){
   {
     cnt=read(tf->fd, tf->tail_buf->bufptr_end, toread);
   }
-  printf("recv data :\n %s\n", tf->tail_buf->bufptr_end);
+  printf("recv data %d bytes :\n %s\n", cnt,tf->tail_buf->bufptr_end);
   switch(cnt){
     case -1: return -1; // error
     case 0: return 0;// EOF

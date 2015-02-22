@@ -22,11 +22,55 @@
 #include <stdio.h>
 #include "fdbuf.h"
 
-
+void signal_handler(int sig)
+{
+        switch(sig)
+        {
+                case SIGHUP:
+                        /* rehash the server */
+                        break;          
+                case SIGTERM:
+                        /* finalize and shutdown the server */
+                        // TODO: liso_shutdown(NULL, EXIT_SUCCESS);
+                        break;    
+                default:
+                        break;
+                        /* unhandled signal */      
+        }       
+}
   
 void test_time();  
 char *get_time_str(char *time_buf);
+
+
+void test_time(){
+        int i;
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        int u=tv.tv_usec;
+        long s=tv.tv_sec;
+        signal( SIGALRM, signal_handler);
+        alarm(1);
+        while(1);
+
+        for(i = 0; i < 100; i++){
+                for(int j=0;j<10000;j++){;}
+                gettimeofday(&tv, NULL);
+                printf("%d\t%ld\n", tv.tv_usec-u, tv.tv_sec-s);
+                // u=tv.tv_usec;
+                //         s=tv.tv_sec;
+
+               
+        }
+}
+
 int main(int argc, char const *argv[])
+{
+  test_time();
+  return 0;
+}
+
+int mainsdawqer(int argc, char const *argv[])
 {
   char xxx[100];
   char x[12]="-231jsd";
@@ -204,30 +248,11 @@ int test_string(){
         return 0;
 }
 
-void test_time(){
-        int i;
-        struct timeval tv;
-        int u=tv.tv_usec;
-        long s=tv.tv_sec;
-
-        for(i = 0; i < 100; i++){
-                for(int j=0;j<10000;j++){;}
-                gettimeofday(&tv, NULL);
-                printf("%d\t%ld\n", tv.tv_usec-u, tv.tv_sec-s);
-                u=tv.tv_usec;
-                        s=tv.tv_sec;
-
-               
-        }
-}
-
 
 
 
 // caculate the time passed since the object is inied
-int elap_time(time_fd* tf){
-  return tf->tms.tv_sec-tf->ini_time_load;
-}
+
 
 fd_buf* ini_buf(){
   fd_buf* fb;

@@ -109,12 +109,13 @@ int main(int argc, char **argv)
     // an fd_set.
 
     struct timeval timeout;
-    timeout.tv_sec=3;
-
+    timeout.tv_sec=2;
+    printf("start slect\n");
   	pool.nready = Select(pool.maxfd+1, &pool.ready_set, NULL, NULL, &timeout);
+    printf("finish slect\n");
 
   	/* If listening descriptor ready, add new client to pool */
-    
+    // printf("segmentation here?1\n");
     if (FD_ISSET(listenfd, &pool.ready_set)) { 
       connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
       tem_tf.fd=connfd;
@@ -127,6 +128,8 @@ int main(int argc, char **argv)
         close(connfd);
       }
     }
+    // printf("segmentation here?2\n");
+
     if (FD_ISSET(secure_listenfd, &pool.ready_set)) { 
       printf("https connection comming\n");
       connfd = Accept(secure_listenfd, (SA *)&clientaddr, &clientlen);
@@ -144,8 +147,11 @@ int main(int argc, char **argv)
         close(connfd);
       }
     }
+    // printf("segmentation here?3\n");
 
     check_clients(&pool); 
+    // printf("segmentation here?4\n");
+
   }
 	/* Echo a text line from each ready connected descriptor */ 
 }
@@ -254,29 +260,56 @@ void check_clients(Pool *p)
   char version[FILENAMELENGTH];
   char *v;
   memset(buf, '0', MAXLINE);
+  printf("start to check_cl\n");
 
 
-
-  for (i = 0; (i <= p->maxi) && (p->nready > 0); i++) {
+  for (i = 0; (i <= p->maxi) && (p->nready >= -4); i++) {
     tf=p->clientfd[i];
     connfd = tf.fd;
+    printf("start to check_cl1\n");
     /* If the descriptor is ready, echo a text line from it */
-    if ((connfd > 0) && (FD_ISSET(connfd, &p->ready_set))) 
+
+
+    if ((connfd > 0) || (FD_ISSET(connfd, &p->ready_set))) 
     { 
+      printf("start to do something with:%d\n", connfd);
       p->nready--;
       for(j=0;j<LOADTIME && !isfinish_bufload(&tf);j++)
       {
-        if(Bufload(&tf, MAXBUF)<0)
+        printf("into the load loop?\n");
+        int bufret=Bufload(&tf, MAXBUF);
+        printf("the is bufret %d \n", bufret);
+        if(bufret<0)
         {
           Close(bufdestroy(&tf));
           FD_CLR(connfd, &p->read_set);
           p->clientfd[i].fd=-1;     
-          break; 
+          return ;
         }
+        printf("into the load loop?2\n");
+
+        if(bufret==0)
+        {
+          ini_time_load(&tf);
+          // printf("time_inied\n");
+        }
+        printf("into the load loop?3\n");
+
+        printf("before check time passed %d\n", elap_time_load(&tf));
+        if(elap_time_load(&tf)>1000)
+        {
+          printf("after check time passed %d\n", elap_time_load(&tf));
+          Close(bufdestroy(&tf));
+          FD_CLR(connfd, &p->read_set);
+          p->clientfd[i].fd=-1;               
+          return;
+        }
+
 
         // time out needed here
         //check for incompete request
       }
+    printf("start to check_cl2\n");
 
       if(isfinish_bufload(&tf) && tf.p_flag !=1){  
         printf("prepare look at the buffer:\n");
@@ -285,20 +318,26 @@ void check_clients(Pool *p)
         bufreadline(&tf, buf, MAXLINE-1);
         sscanf(buf, "%s %s %s", method, path, version);
         v = strstr(version, "HTTP/1.1");
-        if (v == NULL){ //check for the version 
+        if (v == NULL)
+        { //check for the version 
           LogWriteHandle(SORRY,"505","HTTP VERSION NOT SUPPORTED", &tf);
           read_requesthdrs(&tf, &consume, &consume);          
-        } else if (!(strstr(method,"GET") || //check for method
+        } 
+        else if (!(strstr(method,"GET") || //check for method
                            strstr(method,"POST") ||
-                           strstr(method, "HEAD"))){
+                           strstr(method, "HEAD")))
+        {
           LogWriteHandle(SORRY, "501", "Not Implemented", &tf);
           read_requesthdrs(&tf, &consume, &consume);
-        } else {// now the version is right, method is right
+        } 
+        else 
+        {// now the version is right, method is right
           int con_len=MAGICLENGTH,is_conn=1;
           //let us parse the header to get the content length 
           // and whether should we close the connection
           read_requesthdrs(&tf, &is_conn, &con_len); 
-          if(!is_conn) {
+          if(!is_conn) 
+          {
             Close(bufdestroy(&tf));
             FD_CLR(connfd, &p->read_set);
             p->clientfd[i].fd=-1;
@@ -326,6 +365,9 @@ void check_clients(Pool *p)
                 printf("bad length on get or head\n");
               // if there are no length content
                 LogWriteHandle(SORRY, "400", "BAD REQUEST", &tf);
+                printf("bad fd is %d\n",tf.fd);
+                printf("%s\n", tf.tail_buf->buffer);
+
               } 
               else
               {
@@ -357,9 +399,17 @@ void check_clients(Pool *p)
               }
               serveHG(&tf,method,PATH);
             }
+            printf("start to check_cl3.3\n");
+
           }  
-        }  
+          printf("start to check_cl3.2\n");
+
+        }
+        printf("start to check_cl3.1\n");
+  
       }  
+      printf("start to check_cl3\n");
+
       // if(elap_time(&tf)>3){
       //   Close(bufdestroy(&tf));
       //   FD_CLR(connfd, &p->read_set);
@@ -380,6 +430,7 @@ void check_clients(Pool *p)
         }
       }
     }
+    printf("start to check_cl4\n");
 
   }
 
